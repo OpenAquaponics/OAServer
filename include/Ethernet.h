@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <vector>
 #ifndef _WIN32
  #include <sys/ioctl.h>
  #include <sys/socket.h>
@@ -83,6 +84,7 @@ class Ethernet {
                    int mRecvTimeout = -1, int mXmitTimeout = -1,
                    int mRecvBuffSize = -1, int mXmitBuffSize = -1);
 
+    Ethernet(void) {};
    ~Ethernet(void);
 
     int ConfigBlockingState(int mBlocking);
@@ -91,9 +93,10 @@ class Ethernet {
     int ConfigRecvTimeout(int msec);
     int ConfigXmitTimeout(int msec);
 
-    int PollOpenSockets(void);
     int RecvData(unsigned char *buff, int mNumBytes);
+    int RecvData(Socket_t *mSock, unsigned char *buff, int mNumBytes);
     int XmitData(unsigned char *buff, int mNumBytes);
+    int XmitData(Socket_t *mSock, unsigned char *buff, int mNumBytes);
 
     SOCKET_TYPE_e     GetSocketType() { return(this->mSockType); }
     SOCKET_PROTOCOL_e GetSocketProtocol() { return(this->mSockProto); }
@@ -103,12 +106,6 @@ class Ethernet {
     int GetRecvTimeout() { return(this->mRecvTimeout); }
     int GetXmitTimeout() { return(this->mXmitTimeout); }
 
-
-    /**********************************/
-    /* TODO - Temp variable, this needs to be deleted and proper public method exposed */
-    unsigned char  *pData;
-    PacketHeader_t mPktHdr;
-    /**********************************/
 
   protected:
     SOCKET_TYPE_e     SetSocketType(SOCKET_TYPE_e mSockType) { return(this->mSockType = mSockType); }
@@ -120,13 +117,7 @@ class Ethernet {
     int SetXmitTimeout(int msec) { return(this->mXmitTimeout = msec); }
 
   private:
-    int ClearPacket();
-
     Socket_t mSock;
-    Socket_t mClientSock[NUM_LISTEN]; /* Make this dynamic */
-    int mMaxSelectNum;
-    fd_set   mReadFds;
-
     SOCKET_TYPE_e mSockType;
     SOCKET_PROTOCOL_e mSockProto;
     int mBlocking;
@@ -134,7 +125,29 @@ class Ethernet {
     int mXmitBuffSize;
     int mRecvTimeout;
     int mXmitTimeout;
+
 };
 
+class EthernetList : Ethernet {
+  private:
+    int InitList(void);
+
+  public:
+    EthernetList(void);
+   ~EthernetList(void);
+
+    int AddSocket(Socket_t mSock);
+    int RemoveSocket(int mFd);
+    int PollSocketList(void);
+
+  private:
+
+    std::vector<Socket_t> vSockList;
+    int mMaxSelectNum;
+    fd_set   mListFds;
+
+    /* The Derived class must implement a ProcessData function */
+    virtual int ProcessData(int mFd) = 0;
+};
 
 #endif /* _ETHERNET_H_ */

@@ -15,7 +15,7 @@ ALL_INCL_PATHS  = -I${ROOT_INCL_PATH}
 # Files to be compiled by the makefile
 SRCS_C   = 
 OBJS_C   = $(patsubst %.c,%.c.o,${SRCS_C})
-SRCS_CPP = EthernetUtil.cpp Ethernet.cpp
+SRCS_CPP = EthernetUtil.cpp EthernetList.cpp Ethernet.cpp
 OBJS_CPP = $(patsubst %.cpp,%.cpp.o,${SRCS_CPP})
 
 # Name of the library file to be created

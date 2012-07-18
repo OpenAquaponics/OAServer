@@ -112,9 +112,6 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
     return(-1);
   }
 
-  /* Set the select maximum socket number */
-  mMaxSelectNum = mSock.fd;
-
   return(0);
 }
 
