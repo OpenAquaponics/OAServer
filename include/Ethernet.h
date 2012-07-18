@@ -134,7 +134,8 @@ class Ethernet {
 
 };
 
-class EthernetList : Ethernet {
+
+class EthernetList {
   private:
     int InitList(void);
 
@@ -146,14 +147,14 @@ class EthernetList : Ethernet {
     int RemoveSocket(int mFd);
     int PollSocketList(void);
 
-  private:
+    /* The Derived class must implement a ProcessData function */
+    virtual int ProcessData(Ethernet *mSock) = 0;
 
+  private:
     std::vector< boost::shared_ptr<Ethernet> > vpSockList;
     int mMaxSelectNum;
     fd_set   mListFds;
 
-    /* The Derived class must implement a ProcessData function */
-    virtual int ProcessData(Ethernet *mSock) = 0;
 };
 
 #endif /* _ETHERNET_H_ */

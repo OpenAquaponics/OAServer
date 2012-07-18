@@ -34,7 +34,7 @@ class OAServer {
     int Run(void);
     int ParseSocketData(void);
     int ExecuteSQLQuery(void);
-
+    int PollMasterSocket(void);
 
     int PrintHandlerThread(void);
 
@@ -56,7 +56,7 @@ class OAServer {
     int mNumThreads; 
 
   private:
-    std::list<spHandler> lpHandler;
+    std::list< boost::shared_ptr<HandlerThread> > lpHandler;
 
 };
 

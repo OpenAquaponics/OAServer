@@ -36,28 +36,37 @@ bool SortSharedPtr(const boost::shared_ptr<A>& lhs, const boost::shared_ptr<A>& 
 
 
 /* namespace */
-//using namespace boost;
-using namespace std;
+
 
 /* class */
-class HandlerThread {
+class HandlerThread : public EthernetList {
+  private:
+    void Init(void);
+
   public:
-    HandlerThread(void) { mThreadPriority = rand() % 100; cout << mThreadPriority << endl; };
-   ~HandlerThread(void) {};
+    HandlerThread(int mID);
+    HandlerThread(void);
+   ~HandlerThread(void);
 
     bool operator < (const HandlerThread& rhs) {
       return mThreadPriority < rhs.mThreadPriority;
     }
 
+    int GetThreadID(void) { return(mThreadId); };
     int GetThreadPriority(void) { return(mThreadPriority); };
 
+    int AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock);
+    virtual int ProcessData(Ethernet *pSock);
+
+  protected:
+    int SetThreadID(int mId) { this->mThreadId = mId; };
+    int SetThreadPriority(int p) { this->mThreadPriority = p; };
+
   private:
+    int mThreadId;
     int mThreadPriority;
+
 };
-
-
-/* typedef */
-typedef boost::shared_ptr<HandlerThread> spHandler;
 
 
 
