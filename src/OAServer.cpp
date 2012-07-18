@@ -6,7 +6,7 @@
 #include "Ethernet.h"
 #include <sqlite3.h>
 
-
+#if 0
 static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
   for(int i = 0; i < argc; i++) {
     std::cout << szColName[i] << " = " << argv[i] << std::endl;
@@ -89,10 +89,11 @@ int main(int argc, char *argv[]) {
 }
 
 
+#endif
 
 
 
-#if 0
+#if 1
 
 #include "common_types.h"
 #include "pkt_types.h"
