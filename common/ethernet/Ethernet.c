@@ -153,14 +153,14 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         }
 
         /* Load the socket structure */
-        memset(&mSock->addr, 0, sizeof(mSock->addr));
-        mSock->addr.sin_family      = AF_INET;
-        mSock->addr.sin_port        = htons(mPortNum);
-        mSock->addr.sin_addr.s_addr = htonl(INADDR_ANY);
-        mSock->addrLen = sizeof(mSock->addr);
+        memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
+        mSock->mAddr.sin_family      = AF_INET;
+        mSock->mAddr.sin_port        = htons(mPortNum);
+        mSock->mAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        mSock->mAddrLen = sizeof(mSock->mAddr);
         
         /* Bind on the socket port */
-        if((mRetVal = bind(mSock->fd, (struct sockaddr*)&mSock->addr, sizeof(mSock->addr))) < 0 ) {
+        if((mRetVal = bind(mSock->fd, (struct sockaddr*)&mSock->mAddr, sizeof(mSock->mAddr))) < 0 ) {
             printf("ERR: Binding on port %d\n", mPortNum);
             CloseSocket(mSock);
             return(-1);
@@ -175,11 +175,11 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         }
         
         /* Load the socket structure */
-        memset(&mSock->addr, 0, sizeof(mSock->addr));
-        mSock->addr.sin_family      = AF_INET;
-        mSock->addr.sin_port        = htons(mPortNum);
-        mSock->addr.sin_addr.s_addr = inet_addr(mIpAddr);
-        mSock->addrLen = sizeof(mSock->addr);
+        memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
+        mSock->mAddr.sin_family      = AF_INET;
+        mSock->mAddr.sin_port        = htons(mPortNum);
+        mSock->mAddr.sin_addr.s_addr = inet_mAddr(mIpAddr);
+        mSock->mAddrLen = sizeof(mSock->mAddr);
     }
     /* TCP_SERVER */
     else if(mSockType == SOCKET_TYPE_TCP_SERVER) {
@@ -190,14 +190,14 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         }
         
         /* Load the socket structure */
-        memset(&mSock->addr, 0, sizeof(mSock->addr));
-        mSock->addr.sin_family      = AF_INET;
-        mSock->addr.sin_port        = htons(mPortNum);
-        mSock->addr.sin_addr.s_addr = htonl(INADDR_ANY);
-        mSock->addrLen = sizeof(mSock->addr);
+        memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
+        mSock->mAddr.sin_family      = AF_INET;
+        mSock->mAddr.sin_port        = htons(mPortNum);
+        mSock->mAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        mSock->mAddrLen = sizeof(mSock->mAddr);
 
         /* Bind on the socket port */
-        if((mRetVal = bind(mSock->fd, (struct sockaddr*)&mSock->addr, sizeof(mSock->addr))) < 0 ) {
+        if((mRetVal = bind(mSock->fd, (struct sockaddr*)&mSock->mAddr, sizeof(mSock->mAddr))) < 0 ) {
             printf("ERR: Binding on port %d\n", mPortNum);
             CloseSocket(mSock);
             return(-1);
@@ -219,15 +219,15 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         }
         
         /* Load the socket structure */
-        memset(&mSock->addr, 0, sizeof(mSock->addr));
-        mSock->addr.sin_family      = AF_INET;
-        mSock->addr.sin_port        = htons(mPortNum);
-        mSock->addr.sin_addr.s_addr = inet_addr(mIpAddr);
-        mSock->addrLen = sizeof(mSock->addr);
+        memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
+        mSock->mAddr.sin_family      = AF_INET;
+        mSock->mAddr.sin_port        = htons(mPortNum);
+        mSock->mAddr.sin_addr.s_addr = inet_mAddr(mIpAddr);
+        mSock->mAddrLen = sizeof(mSock->mAddr);
 
         mSock->mConnected = FALSE;
         /* Connect the socket */
-        if(connect(mSock->fd, (struct sockaddr*)&mSock->addr, sizeof(mSock->addr)) < 0) {
+        if(connect(mSock->fd, (struct sockaddr*)&mSock->mAddr, sizeof(mSock->mAddr)) < 0) {
             printf("ERR: Connecting to remote TCP server\n");
             CloseSocket(mSock);
             return(-1);
@@ -253,7 +253,7 @@ int32_t RecvData(Socket_t *mSock, unsigned char *mBuff, int32_t mNumBytes) {
    
     /* Get the image from the socket. */
     for(i = 0, mRecvBytes = 0; (mRecvBytes < mNumBytes) && (i < MAX_TCP_READS); mRecvBytes += mRetVal, i++) {
-        if((mRetVal = recvfrom(mSock->fd, &mBuff[mRecvBytes], (mNumBytes - mRecvBytes), 0, (struct sockaddr *)&mSock->addr, (socklen_t*)&mSock->addrLen)) < 0) {
+        if((mRetVal = recvfrom(mSock->fd, &mBuff[mRecvBytes], (mNumBytes - mRecvBytes), 0, (struct sockaddr *)&mSock->mAddr, (socklen_t*)&mSock->mAddrLen)) < 0) {
             printf("ERR: Failed to recieve socket data: %d of %d\n", mRecvBytes, mNumBytes);
             return(-1);
         }
@@ -270,7 +270,7 @@ int32_t XmitData(Socket_t *mSock, unsigned char *mBuff, int32_t mNumBytes) {
     int32_t mXmitBytes = 0;
 
     /* Send the data over the socket */
-    if((mXmitBytes = sendto(mSock->fd, mBuff, mNumBytes, 0, (struct sockaddr *)&mSock->addr, (int)mSock->addrLen)) < 0) {
+    if((mXmitBytes = sendto(mSock->fd, mBuff, mNumBytes, 0, (struct sockaddr *)&mSock->mAddr, (int)mSock->mAddrLen)) < 0) {
 #ifdef _WIN32
         printf("ERR: Failed to xmit socket data: %d of %d  (%d)\n", mXmitBytes, mNumBytes, WSAGetLastError());
 #else

@@ -61,11 +61,11 @@ extern "C" {
 
 /* enums */
 typedef enum {
-    Socket_tYPE_INVALID = 0,
-    Socket_tYPE_UDP_SERVER,
-    Socket_tYPE_UDP_CLIENT,
-    Socket_tYPE_TCP_SERVER,
-    Socket_tYPE_TCP_CLIENT
+    SOCKET_TYPE_INVALID = 0,
+    SOCKET_TYPE_UDP_SERVER,
+    SOCKET_TYPE_UDP_CLIENT,
+    SOCKET_TYPE_TCP_SERVER,
+    SOCKET_TYPE_TCP_CLIENT
 } SOCKET_TYPE_e;
 
 typedef enum {
