@@ -102,7 +102,7 @@ typedef struct {
 int rpiServerMain(void) {
 
   /* Variable Declaration */
-  OAServer mOAServer((char*)"127.0.0.1", 50000, (char*)"./temp.db");
+  OAServer mOAServer(50000, (char*)"./OAServer.sqlite", 10);
 
   mOAServer.SetVerbose(TRUE);
   mOAServer.Run();

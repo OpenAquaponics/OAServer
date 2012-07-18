@@ -8,6 +8,7 @@
 
 
 /* user includes */
+#include "HandlerThread.h"
 #include "Ethernet.h"
 #include "Database.h"
 
@@ -19,6 +20,7 @@
 
 /* typedef */
 
+/* namespace */
 
 /* class */
 class OAServer {
@@ -26,15 +28,23 @@ class OAServer {
   private:
 
   public:
-    OAServer(char *mIpAddr, unsigned int mPortNum, char *mDbName);
+    OAServer(unsigned int mPortNum = 50000, char *mDbName = "./OAServer.sqlite", unsigned int mNumThreads = 2);
    ~OAServer(void);
 
     int Run(void);
     int ParseSocketData(void);
     int ExecuteSQLQuery(void);
 
+
+    int PrintHandlerThread(void);
+
+    /* GET/SET */
     int SetVerbose(int v) { this->mVerbose = v; };
     int GetVerbose(void)  { return(this->mVerbose); };
+    int SetNumThreads(unsigned int t) { this->mNumThreads = t; };
+    int GetNumthreads(void)  { return(this->mNumThreads); };
+
+
 
   protected:
 
@@ -43,6 +53,10 @@ class OAServer {
     Database *pDb;
 
     int mVerbose;
+    int mNumThreads; 
+
+  private:
+    std::list<spHandler> lpHandler;
 
 };
 

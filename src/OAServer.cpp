@@ -2,14 +2,18 @@
 #include "OAServer.h"
 
 
+
 /****************************************/
-OAServer::OAServer(char *mIpAddr, unsigned int mPortNum, char *mDbName) {
+OAServer::OAServer(unsigned int mPortNum, char *mDbName, unsigned int mNumThreads) {
 /****************************************/
 
-  pSock = new Ethernet(SOCKET_TYPE_TCP_SERVER, mIpAddr, mPortNum);
+  pSock = new Ethernet(SOCKET_TYPE_TCP_SERVER, (char*)"", mPortNum);
   pDb   = new Database(mDbName);
 
-  mVerbose = TRUE;
+  SetNumThreads(mNumThreads);
+  for(int i = 0; i < mNumThreads; i++) {
+    lpHandler.push_back(spHandler(new HandlerThread()));
+  }
 }
 
 
@@ -21,6 +25,16 @@ OAServer::~OAServer(void) {
 
 }
 
+
+/****************************************/
+int OAServer::PrintHandlerThread(void) {
+/****************************************/
+  for(list<spHandler>::const_iterator cIter = lpHandler.begin(); cIter != lpHandler.end(); cIter++) {
+    cout << (*cIter)->GetThreadPriority() << endl;
+  }
+
+  return(0);
+}
 
 /****************************************/
 int OAServer::ParseSocketData(void) {
@@ -42,25 +56,27 @@ int OAServer::ParseSocketData(void) {
     case OASERVER_STATISTICS_DATA: {
       PktStatistics_t *pPkt = (PktStatistics_t*)pSock->pData;
       sprintf(pDb->pSQL, 
-        "INSERT INTO Statistics (mNodeId, mSampleTime, mTempAirIndoor, mTempAirOutdoor, mTempWater, mHumidityIndoor, mHumidityOutdoor, mWaterLevel, mBattaryVoltage, mSolarPanelVoltage) VALUES ('%d', '%d', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f');",
-         pPkt->mHdr.mDeviceId, pPkt->mHdr.mTimeTagSec, pPkt->mTempAirIndoor,
-         pPkt->mTempAirOutdoor, pPkt->mTempWater, pPkt->mHumidityIndoor,
-         pPkt->mHumidityOutdoor, pPkt->mWaterLevel, pPkt->mBattaryVoltage,
-         pPkt->mSolarPanelVoltage);
-      break; }
+        "INSERT INTO OANodeData (mNodeId, mSampleTimetag, mVal01, mVal02, mVal03) VALUES ('%d', '%d', '%.2f', '%.2f', '%.2f');",
+         0x1234567890ABCDEF, pPkt->mHdr.mTimeTagSec, 123.4, 543.3, -978.23);
+      };
+      break;
+#if 0
     case OASERVER_NODE_CONFIG: {
       PktNodeConfig_t *pPkt = (PktNodeConfig_t*)pSock->pData;
       sprintf(pDb->pSQL, 
         "REPLACE INTO NodeConfig (mNodeId, mDescription, mSamplePeriodSecs, mLastUpdate, mNumFish, mNumPlants) VALUES ('%d', '%s', '%d', '%d', '%d', '%d');",
          pPkt->mHdr.mDeviceId, pPkt->mDescription, pPkt->mHdr.mTimeTagSec,
          pPkt->mLastUpdate, pPkt->mNumFish, pPkt->mNumPlants);
-      break; }
+      };
+      break;
     case OASERVER_ACCOUNTING: {
       PktAccounting_t *pPkt = (PktAccounting_t*)pSock->pData;
       sprintf(pDb->pSQL, 
         "INSERT INTO Accounting (mDate, mDescription, mAmount) VALUES ('%d', '%s', '%.2f');",
          pPkt->mDate, pPkt->mDescription, pPkt->mAmount);
-      break; }
+      };
+      break;
+#endif
     default: break;
   }
 
@@ -82,6 +98,9 @@ int OAServer::ExecuteSQLQuery(void) {
 /****************************************/
 int OAServer::Run(void) {
 /****************************************/
+
+  lpHandler.sort(SortSharedPtr<HandlerThread>);
+  PrintHandlerThread();
 
   /* Accept the incoming connections and handle the data */
   printf("INFO: OASever running, waiting for remote data to process ...\n");
