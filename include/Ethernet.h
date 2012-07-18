@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <vector>
 #ifndef _WIN32
  #include <sys/ioctl.h>
  #include <sys/socket.h>
@@ -19,6 +18,10 @@
  #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
  #include <string.h>
 #endif
+
+
+#include <vector>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 /* user includes */
 #include "pkt_types.h"
@@ -79,10 +82,14 @@ class Ethernet {
     int CloseSocket(void);
 
   public:
+    /* Create a new socket from scratch */
     Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, unsigned int mPortNum,
                    int mBlocking = -1,
                    int mRecvTimeout = -1, int mXmitTimeout = -1,
                    int mRecvBuffSize = -1, int mXmitBuffSize = -1);
+
+    /* Create a new socket object from this existing socket */
+    Ethernet(SOCKET_TYPE_e mSockType, Socket_t mSock);
 
     Ethernet(void) {};
    ~Ethernet(void);
@@ -94,12 +101,11 @@ class Ethernet {
     int ConfigXmitTimeout(int msec);
 
     int RecvData(unsigned char *buff, int mNumBytes);
-    int RecvData(Socket_t *mSock, unsigned char *buff, int mNumBytes);
     int XmitData(unsigned char *buff, int mNumBytes);
-    int XmitData(Socket_t *mSock, unsigned char *buff, int mNumBytes);
 
     SOCKET_TYPE_e     GetSocketType() { return(this->mSockType); }
     SOCKET_PROTOCOL_e GetSocketProtocol() { return(this->mSockProto); }
+    int GetSocketFd() { return(this->mSock.fd); }
     int GetBlockingState() { return(this->mBlocking); }
     int GetRecvBuffSize() { return(this->mRecvBuffSize); }
     int GetXmitBuffSize() { return(this->mXmitBuffSize); }
@@ -136,18 +142,18 @@ class EthernetList : Ethernet {
     EthernetList(void);
    ~EthernetList(void);
 
-    int AddSocket(Socket_t mSock);
+    int AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock);
     int RemoveSocket(int mFd);
     int PollSocketList(void);
 
   private:
 
-    std::vector<Socket_t> vSockList;
+    std::vector< boost::shared_ptr<Ethernet> > vpSockList;
     int mMaxSelectNum;
     fd_set   mListFds;
 
     /* The Derived class must implement a ProcessData function */
-    virtual int ProcessData(int mFd) = 0;
+    virtual int ProcessData(Ethernet *mSock) = 0;
 };
 
 #endif /* _ETHERNET_H_ */

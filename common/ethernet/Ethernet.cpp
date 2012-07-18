@@ -20,6 +20,7 @@ int Ethernet::Init(void) {
   return(0);
 }
 
+
 /****************************************/
 Ethernet::Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, unsigned int mPortNum, int mBlocking,
                    int mRecvTimeout, int mXmitTimeout,
@@ -48,6 +49,27 @@ Ethernet::Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, unsigned int mPortNum
     ConfigRecvTimeout(mRecvTimeout);
     ConfigXmitTimeout(mXmitTimeout);
   }
+
+}
+
+
+/****************************************/
+Ethernet::Ethernet(SOCKET_TYPE_e mSockType, Socket_t mSock) {
+/****************************************/
+  /* Initialize all of the class data members */
+  Init();
+
+  /* Save the incoming data */
+  this->mSockType = mSockType;
+  if((mSockType == SOCKET_TYPE_UDP_SERVER) || (mSockType == SOCKET_TYPE_UDP_CLIENT)) {
+    this->mSockProto = SOCKET_PROTOCOL_UDP;
+  }
+  else if((mSockType == SOCKET_TYPE_TCP_SERVER) || (mSockType == SOCKET_TYPE_TCP_CLIENT)) {
+    this->mSockProto = SOCKET_PROTOCOL_TCP;
+  }
+
+  /* Save the incoming parameters */
+  this->mSock = mSock;
 
 }
 
