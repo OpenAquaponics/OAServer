@@ -1,4 +1,6 @@
 # Ignore List
 *.swp
+*.o
+*.a
 # Except this file
 !.gitignore

@@ -54,7 +54,7 @@ int rpiServerMain(void) {
   char eof[16];
 
   int32_t retVal = 0;
-  pkt_hdr_t hdr;
+  PacketHeader_t hdr;
   meas_data_t  *measData = NULL;
   water_data_t *waterData = NULL;
   fish_data_t  *fishData = NULL;
@@ -159,14 +159,14 @@ int rpiServerMain(void) {
         //Echo back the message that came in
         else {
           if((retVal = read(s , &hdr, sizeof(hdr))) == sizeof(hdr)) {
-            if((data = (unsigned char*)malloc(hdr.numBytes)) != NULL) {
-            //  retVal = sockSer->RecvData((unsigned char*)data, hdr.numBytes);
-              retVal = read(s , data, hdr.numBytes);
+            if((data = (unsigned char*)malloc(hdr.mNumBytes)) != NULL) {
+            //  retVal = sockSer->RecvData((unsigned char*)data, hdr.mNumBytes);
+              retVal = read(s , data, hdr.mNumBytes);
             }
    
 /*  syslog(LOG_INFO, "Writing to my Syslog");*/
 
-            if(hdr.msgType == ADD_MEASUREMENT) {
+            if(hdr.mMsgType == ADD_MEASUREMENT) {
               measData = (meas_data_t*)data;
               printf("%4d,%02d,%02d,%s,%.2f,%s\n",
                 measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day,
@@ -179,7 +179,7 @@ int rpiServerMain(void) {
               fclose(outfile);
 #endif
             }
-            else if(hdr.msgType == ADD_WATER) {
+            else if(hdr.mMsgType == ADD_WATER) {
               waterData = (water_data_t*)data;
               printf("%4d,%02d,%02d,%.2f,%s\n",
                 waterData->rpiHdr.year, waterData->rpiHdr.month, waterData->rpiHdr.day,
@@ -192,7 +192,7 @@ int rpiServerMain(void) {
               fclose(outfile);
 #endif
             }
-            else if(hdr.msgType == ADD_FISH) {
+            else if(hdr.mMsgType == ADD_FISH) {
               fishData = (fish_data_t*)data;
               printf("%4d,%02d,%02d,%s,%s,%s\n",
                 fishData->rpiHdr.year, fishData->rpiHdr.month, fishData->rpiHdr.day,
@@ -205,7 +205,7 @@ int rpiServerMain(void) {
               fclose(outfile);
 #endif
              }
-            else if(hdr.msgType == ADD_PLANT) {
+            else if(hdr.mMsgType == ADD_PLANT) {
               plantData = (plant_data_t*)data;
               printf("%4d,%02d,%02d,%s,%s,%s\n",
                 plantData->rpiHdr.year, plantData->rpiHdr.month, plantData->rpiHdr.day,
