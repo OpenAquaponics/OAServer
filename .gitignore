@@ -1,0 +1,4 @@
+# Ignore List
+*.swp
+# Except this file
+!.gitignore
