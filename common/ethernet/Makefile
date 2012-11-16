@@ -3,14 +3,14 @@
 ################################################################################
 
 # set where we are relative to the root of the source tree and include it
-ROOT_SRC_PATH=../..
+ROOT_SRC_PATH = ../..
 include ${ROOT_SRC_PATH}/root_make.rules
 
 # Library name
 LIB_NAME = "ETHERNET"
 
 # Headers files needed for the compile/linking phase
-LOCAL_INCLS= ${ROOT_INCL_PATH}/Ethernet.h
+ALL_INCL_PATHS  = -I${ROOT_INCL_PATH}
 
 # Files to be compiled by the makefile
 SRCS_C   = Ethernet.c
@@ -24,14 +24,14 @@ TARGETS=libethernet.a
 # 'make all' target
 all: $(TARGETS)
 
-${OBJS_C} : ${LOCAL_INCLS} ${SRCS_C} ./Makefile
-	${GCC} -c ${ROOT_INCL} $* -o $*.o
+${OBJS_C} : ${SRCS_C} ./Makefile
+	${GCC} -c ${ALL_INCL_PATHS} $* -o $*.o
 
-${OBJS_CPP} : ${LOCAL_INCLS} ${SRCS_CPP} ./Makefile
-	${G++} -c ${ROOT_INCL} $* -o $*.o
+${OBJS_CPP} : ${SRCS_CPP} ./Makefile
+	${G++} -c ${ALL_INCL_PATHS} $* -o $*.o
 
 # 'make' target
-libethernet.a: ${OBJS_C} ${OBJS_CPP} ${LCL_INCLS} ${SRCS_C} ${SRCS_CPP} ./Makefile
+libethernet.a: ${OBJS_C} ${OBJS_CPP} ${SRCS_C} ${SRCS_CPP} ./Makefile
 	ar -rv libethernet.a ${OBJS_C} ${OBJS_CPP}
 
 # 'make install' target

@@ -34,17 +34,8 @@ CPP_COMP_FLAGS = $(CPP_COMP_WARN_FLAGS) $(COMP_OPTIMIZE_FLAGS) \
 	$(DEBUGGER_FLAGS) $(USER_DEF_SYMBOLS)
 
 
-# include paths
-ROOT_INCL= -I${ROOT_INCL_PATH}
-
-
-# 3rd party include paths
-
-
-# lib paths
-ROOT_LIB  = -L${ROOT_LIB_PATH}
 
 # library names
-ROOT_SERIAL   = -lserial
-ROOT_ETHERNET = -lethernet
+LIB_SERIAL   = -lserial
+LIB_ETHERNET = -lethernet
 

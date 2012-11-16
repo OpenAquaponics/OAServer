@@ -178,7 +178,7 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
         mSock->mAddr.sin_family      = AF_INET;
         mSock->mAddr.sin_port        = htons(mPortNum);
-        mSock->mAddr.sin_addr.s_addr = inet_mAddr(mIpAddr);
+        mSock->mAddr.sin_addr.s_addr = inet_addr(mIpAddr);
         mSock->mAddrLen = sizeof(mSock->mAddr);
     }
     /* TCP_SERVER */
@@ -222,7 +222,7 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
         mSock->mAddr.sin_family      = AF_INET;
         mSock->mAddr.sin_port        = htons(mPortNum);
-        mSock->mAddr.sin_addr.s_addr = inet_mAddr(mIpAddr);
+        mSock->mAddr.sin_addr.s_addr = inet_addr(mIpAddr);
         mSock->mAddrLen = sizeof(mSock->mAddr);
 
         mSock->mConnected = FALSE;

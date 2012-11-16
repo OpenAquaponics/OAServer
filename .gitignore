@@ -2,5 +2,6 @@
 *.swp
 *.o
 *.a
+a.out
 # Except this file
 !.gitignore

@@ -7,19 +7,19 @@
 ################################################################################
 
 # set where we are relative to the root of the source tree and include it
-ROOT_SRC_PATH=..
+ROOT_SRC_PATH = ..
 include ${ROOT_SRC_PATH}/root_make.rules
 
 # Library name
 LIB_NAME = "OAServer"
 
 # Include and library paths
-ALL_INCL_PATHS  = ${ROOT_INCL}
-ALL_LIB_PATHS   = ${ROOT_LIB}
+ALL_INCL_PATHS  = -I${ROOT_INCL_PATH}
+ALL_LIB_PATHS   = -L${ROOT_LIB_PATH}
 
-# Includeand library files
-CMN_ROOT_LIBS   = ${ROOT_ETHERNET}
-ALL_LIBS        = ${CMN_ROBOT_LIBS}
+# Include and library files
+ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
+ALL_LIBS        = ${LIB_ETHERNET} -lsqlite3
 
 # Files to be compiled by the makefile
 SRCS = OAServer.cpp
@@ -34,10 +34,10 @@ CC = g++
 all: ${TARGETS}
 
 ${OBJS} : ${SRCS} ${LOCAL_INCLS} ./Makefile
-	${CC} ${ALL_INCL_PATHS} -c $*.cpp -o $*.o
+	${CC} ${ALL_PATHS} -c $*.cpp -o $*.o
 
-RPionicsDaemon: ${OBJS} ${LOCAL_INCLS}
-	${CC} ${ALL_INCL_PATHS} -o $@ ${OBJS} ${ALL_LIB_PATHS} ${ALL_LIBS}
+OAServer: ${OBJS} ${LOCAL_INCLS}
+	${CC} ${ALL_PATHS} -o $@ ${OBJS} ${ALL_LIBS}
 
 it_all:
 	@echo " "

@@ -1,4 +1,99 @@
 
+
+
+#include <iostream>
+
+#include "Ethernet.h"
+#include <sqlite3.h>
+
+
+static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
+  for(int i = 0; i < argc; i++) {
+    std::cout << szColName[i] << " = " << argv[i] << std::endl;
+  }
+  std::cout << "\n";
+  return(0);
+}
+
+
+
+int OAServerMain(void) {
+  /* Variable Declaration */
+  int32_t  mRetVal = 0;
+  char     mIpAddr[] = "127.0.0.1";
+  uint32_t mPortNum = 4335;
+  Ethernet *mServerSocket = NULL;
+  Ethernet *mClientSocket = NULL;
+  sqlite3 *mDbPtr = NULL;
+
+  if((mServerSocket = new Ethernet(SOCKET_TYPE_UDP_SERVER, mIpAddr, mPortNum)) == NULL) {
+    printf("ERR: Creating server socket: %s:%d\n", mIpAddr, mPortNum);
+    exit(-1);
+  }
+
+  if((mClientSocket = new Ethernet(SOCKET_TYPE_UDP_CLIENT, mIpAddr, mPortNum)) == NULL) {
+    printf("ERR: Creating client socket: %s:%d\n", mIpAddr, mPortNum);
+    exit(-1);
+  }
+
+  char xmitStr[] = "Hello World\n";
+  char recvStr[256];
+
+  memset(recvStr, 0, sizeof(recvStr));
+  mClientSocket->XmitData((unsigned char*)xmitStr, sizeof(xmitStr));
+  mServerSocket->RecvData((unsigned char*)recvStr, sizeof(xmitStr));
+
+  printf("%s\n", recvStr); 
+
+  if(mServerSocket) {
+    delete mServerSocket;
+  }
+
+  if(mClientSocket) {
+    delete mClientSocket;
+  }
+
+  if(mRetVal = sqlite3_open("temp.db", &mDbPtr)) {
+    printf("ERR: Failed to open database\n");
+    exit(-1);
+  }
+
+  char *mDbErrMsg = NULL;
+  const char *pSQL[4];
+  pSQL[0] = "CREATE TABLE Employee(Firstname varchar(30), Lastname varchar(30), Age smallint)";
+  pSQL[1] = "INSERT INTO Employee(Firstname, Lastname, Age) VALUES ('Woody', 'Alan', 45)";
+  pSQL[2] = "INSERT INTO Employee(Firstname, Lastname, Age) VALUES ('Micheal', 'Bay', 38)";
+  pSQL[3] = "SELECT * FROM Employee";
+
+
+  for(int i = 0; i < 4; i++) {
+    if(sqlite3_exec(mDbPtr, pSQL[i], callback, 0, &mDbErrMsg)) {
+      std::cout << "Sql Error: " << mDbErrMsg << std::endl;
+      sqlite3_free(mDbErrMsg);
+      break;
+    }
+  }
+
+  if(mDbPtr) {
+    sqlite3_close(mDbPtr);
+  }
+
+}
+
+
+int main(int argc, char *argv[]) {
+
+  OAServerMain();
+
+  return(0);
+}
+
+
+
+
+
+#if 0
+
 #include "common_types.h"
 #include "pkt_types.h"
 #include "Ethernet.h"
@@ -307,5 +402,9 @@ int main(int argc, char *argv[]) {
   return(0);
 }
 
+
 #endif
+
+#endif
+
 
