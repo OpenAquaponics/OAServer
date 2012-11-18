@@ -6,7 +6,6 @@
 #include "Ethernet.h"
 #include <sqlite3.h>
 
-#if 0
 static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
   for(int i = 0; i < argc; i++) {
     std::cout << szColName[i] << " = " << argv[i] << std::endl;
@@ -16,6 +15,7 @@ static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
 }
 
 
+#if 0
 
 int OAServerMain(void) {
   /* Variable Declaration */
@@ -135,6 +135,7 @@ typedef struct {
 int rpiServerMain(void) {
 
   /* Variable Declaration */
+  int mRetVal = 0;
   int opt = TRUE;
   int master_socket = 0;
   int addrlen = 0;
@@ -148,6 +149,9 @@ int rpiServerMain(void) {
   struct sockaddr_in address;
   char buffer[1025];  //data buffer of 1K
   char eof[16];
+  sqlite3 *mDbPtr = NULL;
+  char *mDbErrMsg = NULL;
+  char pSQL[512];
 
   int32_t retVal = 0;
   PacketHeader_t hdr;
@@ -195,6 +199,7 @@ int rpiServerMain(void) {
   addrlen = sizeof(address);
   puts("Waiting for connections...");
   while(TRUE) {
+
     //clear the socket set
     FD_ZERO(&readfds);
 
@@ -260,61 +265,50 @@ int rpiServerMain(void) {
               retVal = read(s , data, hdr.mNumBytes);
             }
    
-/*  syslog(LOG_INFO, "Writing to my Syslog");*/
+            if(mRetVal = sqlite3_open("./temp.db", &mDbPtr)) {
+              printf("ERR: Failed to open database\n");
+              exit(-1);
+            }
 
             if(hdr.mMsgType == ADD_MEASUREMENT) {
               measData = (meas_data_t*)data;
+              //strftime('%s','2004-01-01 02:34:57')
+              sprintf(pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d-%d-%d', '%f')", 
+                      1, measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day, measData->measData);
+
               printf("%4d,%02d,%02d,%s,%.2f,%s\n",
                 measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day,
                 meas_type[measData->measType].abbr, measData->measData, measData->comment);
-#if 0
-              outfile = fopen("/var/local/RPionics/RPionicsDatabase/water_measurement.dat", "a");
-              fprintf(outfile, "%4d,%02d,%02d,%s,%.2f,%s\n",
-                measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day,
-                meas_type[measData->measType].abbr, measData->measData, measData->comment);
-              fclose(outfile);
-#endif
+
+              if(sqlite3_exec(mDbPtr, pSQL, callback, 0, &mDbErrMsg)) {
+                std::cout << "Sql Error: " << mDbErrMsg << std::endl;
+                sqlite3_free(mDbErrMsg);
+              }
+
             }
             else if(hdr.mMsgType == ADD_WATER) {
               waterData = (water_data_t*)data;
               printf("%4d,%02d,%02d,%.2f,%s\n",
                 waterData->rpiHdr.year, waterData->rpiHdr.month, waterData->rpiHdr.day,
                 waterData->waterData, waterData->comment);
-#if 0
-              outfile = fopen("/var/local/RPionics/RPionicsDatabase/additional_water.dat", "a");
-              fprintf(outfile, "%4d,%02d,%02d,%.2f,%s\n",
-                waterData->rpiHdr.year, waterData->rpiHdr.month, waterData->rpiHdr.day,
-                waterData->waterData, waterData->comment);
-              fclose(outfile);
-#endif
             }
             else if(hdr.mMsgType == ADD_FISH) {
               fishData = (fish_data_t*)data;
               printf("%4d,%02d,%02d,%s,%s,%s\n",
                 fishData->rpiHdr.year, fishData->rpiHdr.month, fishData->rpiHdr.day,
                 fish_type[fishData->fishType].abbr, fish_size[fishData->fishSize].abbr, fishData->comment);
-#if 0
-              outfile = fopen("/var/local/RPionics/RPionicsDatabase/fish_measurement.dat", "a");
-              fprintf(outfile, "%4d,%02d,%02d,%s,%s,%s\n",
-                fishData->rpiHdr.year, fishData->rpiHdr.month, fishData->rpiHdr.day,
-                fish_type[fishData->fishType].abbr, fish_size[fishData->fishSize].abbr, fishData->comment);
-              fclose(outfile);
-#endif
-             }
+            }
             else if(hdr.mMsgType == ADD_PLANT) {
               plantData = (plant_data_t*)data;
               printf("%4d,%02d,%02d,%s,%s,%s\n",
                 plantData->rpiHdr.year, plantData->rpiHdr.month, plantData->rpiHdr.day,
                 plant_type[plantData->plantType].abbr, plant_size[plantData->plantSize].abbr, plantData->comment);
-#if 0
-              outfile = fopen("/var/local/RPionics/RPionicsDatabase/plant_measurement.dat", "a");
-              fprintf(outfile, "%4d,%02d,%02d,%s,%s,%s\n",
-                plantData->rpiHdr.year, plantData->rpiHdr.month, plantData->rpiHdr.day,
-                plant_type[plantData->plantType].abbr, plant_size[plantData->plantSize].abbr, plantData->comment);
-              fclose(outfile);
-#endif
-             }
-   
+            }
+
+            if(mDbPtr) {
+              sqlite3_close(mDbPtr);
+            }
+ 
             if(data) {
               free(data);
             }
