@@ -7,17 +7,19 @@
 /****************************************/
 int Ethernet::Init(void) {
 /****************************************/
-  this->mSockType     = SOCKET_TYPE_INVALID;
-  this->mSockProto    = SOCKET_PROTOCOL_INVALID;
-  this->mBlocking     = -1;
-  this->mRecvTimeout  = -1;
-  this->mXmitTimeout  = -1;
-  this->mRecvBuffSize = -1;
-  this->mXmitBuffSize = -1;
+  mSockType     = SOCKET_TYPE_INVALID;
+  mSockProto    = SOCKET_PROTOCOL_INVALID;
+  mBlocking     = -1;
+  mRecvTimeout  = -1;
+  mXmitTimeout  = -1;
+  mRecvBuffSize = -1;
+  mXmitBuffSize = -1;
+  
+  data = NULL;
 
-  memset(&this->mSock, 0, sizeof(this->mSock));
+  memset(&mSock, 0, sizeof(mSock));
   for(int i = 0; i < NUM_LISTEN; i++) {
-    memset(&this->mClientSock[i], 0, sizeof(Socket_t));
+    memset(&mClientSock[i], 0, sizeof(Socket_t));
   }
 
   return(0);
@@ -142,7 +144,6 @@ int Ethernet::PollOpenSockets(void) {
   int mRetVal = 0;
   int mNewSock = 0;
   char eof[16];
-  PacketHeader_t hdr;
 
   /* Clear the socket set */
   FD_ZERO(&mReadFds);
@@ -203,21 +204,15 @@ int Ethernet::PollOpenSockets(void) {
       /* Process the incoming data */
       /* TODO - This needs to have a functional callback, inherited method, or msq in order to send data to processing task */
       else {
-        if((mRetVal = read(s , &hdr, sizeof(hdr))) == sizeof(hdr)) {
-          unsigned char *data = NULL;
-
-          if((data = (unsigned char*)malloc(hdr.mNumBytes)) != NULL) {
-            mRetVal = read(s ,data, hdr.mNumBytes);
+        if((mRetVal = read(s , &mPktHdr, sizeof(mPktHdr))) == sizeof(mPktHdr)) {
+          if(mData) {
+            free(mData);
+            mData = NULL;
           }
 
-/************************/
-          if(hdr.mMsgType == ADD_MEASUREMENT) {
-            meas_data_t  *measData = (meas_data_t*)data;
-            printf("%4d,%02d,%02d,%s,%.2f,%s\n",
-              measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day,
-              meas_type[measData->measType].abbr, measData->measData, measData->comment);
+          if((mData = (unsigned char*)malloc(mPktHdr.mNumBytes)) != NULL) {
+            mRetVal = read(s, mData, mPktHdr.mNumBytes);
           }
-/***********************/
         }
       }
     }

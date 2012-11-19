@@ -34,7 +34,7 @@
  #define SLEEP(x)                     (sleep(x))
 #endif
  
-#define NUM_LISTEN    (5)
+#define NUM_LISTEN    (1)
 
 /**********************/
 /* REMOVE THIS */
@@ -131,6 +131,13 @@ class Ethernet {
     int GetRecvTimeout() { return(this->mRecvTimeout); }
     int GetXmitTimeout() { return(this->mXmitTimeout); }
 
+
+    /**********************************/
+    /* TODO - Temp variable, this needs to be deleted */
+    unsigned char *mData;
+    PacketHeader_t mPktHdr;
+    /**********************************/
+
   protected:
     SOCKET_TYPE_e     SetSocketType(SOCKET_TYPE_e mSockType) { return(this->mSockType = mSockType); }
     SOCKET_PROTOCOL_e SetSocketProtocol(SOCKET_PROTOCOL_e mSockProto) { return(this->mSockProto = mSockProto); }
@@ -153,6 +160,7 @@ class Ethernet {
     int mXmitBuffSize;
     int mRecvTimeout;
     int mXmitTimeout;
+
 };
 
 #endif

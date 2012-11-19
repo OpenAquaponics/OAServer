@@ -38,4 +38,5 @@ CPP_COMP_FLAGS = $(CPP_COMP_WARN_FLAGS) $(COMP_OPTIMIZE_FLAGS) \
 # library names
 LIB_SERIAL   = -lserial
 LIB_ETHERNET = -lethernet
+LIB_DATABASE = -ldatabase -lsqlite3
 
