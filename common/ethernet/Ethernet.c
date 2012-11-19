@@ -137,13 +137,14 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
 /****************************************/
     /* Variable Declaration */
     int32_t mRetVal = 0;
+    int mOpt = TRUE;
     
     /* Sanity Check */
     if(mSock == NULL) {
         printf("ERR: BlockData is NULL\n");
         return(-1);
     }
-    
+
     /* UDP_SERVER */
     if(mSockType == SOCKET_TYPE_UDP_SERVER) {
         /* Open the socket file descriptor */
@@ -188,7 +189,14 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
             printf("ERR: Opening TCP server socket\n");
             return(-1);
         }
-        
+
+        /* Set master socket to allow multiple connections */
+        if(setsockopt(mSock->fd, SOL_SOCKET, SO_REUSEADDR, (char *)&mOpt, sizeof(mOpt)) < 0 ) {
+          printf("ERR: Configuring socket to reuseable\n");
+          CloseSocket(mSock);
+          return(-1);
+        }
+       
         /* Load the socket structure */
         memset(&mSock->mAddr, 0, sizeof(mSock->mAddr));
         mSock->mAddr.sin_family      = AF_INET;
@@ -204,7 +212,7 @@ int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint
         }
 
         /* Listen on the port */
-        if(listen(mSock->fd, 1) < 0) {
+        if(listen(mSock->fd, NUM_LISTEN) < 0) {
             printf("ERR: Listen on port %d\n", mPortNum);
             CloseSocket(mSock);
             return(-1);

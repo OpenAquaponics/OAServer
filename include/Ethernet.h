@@ -15,6 +15,7 @@
  #include <sys/ioctl.h>
  #include <sys/socket.h>
  #include <arpa/inet.h>
+ #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
  #include <string.h>
 #endif
 
@@ -33,6 +34,7 @@
  #define SLEEP(x)                     (sleep(x))
 #endif
  
+#define NUM_LISTEN    (5)
 
 /**********************/
 /* REMOVE THIS */
@@ -100,6 +102,7 @@ typedef struct {
 /* C function declarations */
 int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint32_t mPortNum);
 int32_t CloseSocket(Socket_t *mSock);
+int32_t PollOpenSockets(void);
 int32_t AcceptConnection(Socket_t *mSock, Socket_t *mSockAcc);
 int32_t QueryTCPConnectionState(Socket_t *mSock, Socket_t *mSockAcc);
 int32_t RecvData(Socket_t *mSock, unsigned char *buff, int32_t mNumBytes);
@@ -139,6 +142,7 @@ class Ethernet {
     int32_t ConfigRecvTimeout(int32_t msec);
     int32_t ConfigXmitTimeout(int32_t msec);
 
+    int32_t PollOpenSockets(void);
     int32_t RecvData(unsigned char *buff, int32_t mNumBytes);
     int32_t XmitData(unsigned char *buff, int32_t mNumBytes);
 
@@ -162,7 +166,8 @@ class Ethernet {
   private:
 
     Socket_t mSock;
-    Socket_t mSockAcc;
+    Socket_t mClientSock[NUM_LISTEN]; /* Make this dynamic */
+    fd_set   mReadFds;
 
     SOCKET_TYPE_e mSockType;
     SOCKET_PROTOCOL_e mSockProto;
