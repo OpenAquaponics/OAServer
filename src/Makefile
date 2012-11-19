@@ -19,7 +19,7 @@ ALL_LIB_PATHS   = -L${ROOT_LIB_PATH}
 
 # Include and library files
 ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
-ALL_LIBS        = ${LIB_ETHERNET} -lsqlite3
+ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE}
 
 # Files to be compiled by the makefile
 SRCS = OAServer.cpp

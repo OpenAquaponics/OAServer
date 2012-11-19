@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
 #include "common_types.h"
 #include "pkt_types.h"
 #include "Ethernet.h"
+#include "Database.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -136,14 +137,7 @@ int rpiServerMain(void) {
 
   /* Variable Declaration */
   int mRetVal = 0;
-  int new_socket = 0;
-  int client_socket[30]; 
-  int max_clients = 30;
-  int activity;
   int i;
-  int valread;
-  int s;
-  struct sockaddr_in address;
   char buffer[1025];  //data buffer of 1K
   char eof[16];
   sqlite3 *mDbPtr = NULL;
@@ -151,11 +145,6 @@ int rpiServerMain(void) {
   char pSQL[512];
 
   int32_t retVal = 0;
-  PacketHeader_t hdr;
-  meas_data_t  *measData = NULL;
-  water_data_t *waterData = NULL;
-  fish_data_t  *fishData = NULL;
-  plant_data_t *plantData = NULL;
   unsigned char *data = NULL;
   FILE *outfile = NULL;
 
@@ -167,6 +156,26 @@ int rpiServerMain(void) {
   while(TRUE) {
 
     mSock.PollOpenSockets();
+
+    /* The packet header and data are public variables from the class, this is a kludge */
+    if(mSock.mData) {
+
+      if(mRetVal = sqlite3_open("./temp.db", &mDbPtr)) {
+        printf("ERR: Failed to open database\n");
+        exit(-1);
+      }
+ 
+ 
+      //strftime('%s','2004-01-01 02:34:57')
+      meas_data_t *measData = (meas_data_t*)mSock.mData;
+      sprintf(pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d-%d-%d', '%f')", 
+              1, measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day, *((unsigned int*)mSock.mData));
+ 
+      if(sqlite3_exec(mDbPtr, pSQL, callback, 0, &mDbErrMsg)) {
+        std::cout << "Sql Error: " << mDbErrMsg << std::endl;
+        sqlite3_free(mDbErrMsg);
+      }
+    }
 
   }
 
