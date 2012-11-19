@@ -5,7 +5,7 @@
 
 
 /****************************************/
-int32_t Ethernet::Init(void) {
+int Ethernet::Init(void) {
 /****************************************/
   this->mSockType     = SOCKET_TYPE_INVALID;
   this->mSockProto    = SOCKET_PROTOCOL_INVALID;
@@ -24,30 +24,27 @@ int32_t Ethernet::Init(void) {
 }
 
 /****************************************/
-Ethernet::Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, uint32_t mPortNum, int32_t mBlocking,
-                   int32_t mRecvTimeout, int32_t mXmitTimeout,
-                   int32_t mRecvBuffSize, int32_t mXmitBuffSize) {
+Ethernet::Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, unsigned int mPortNum, int mBlocking,
+                   int mRecvTimeout, int mXmitTimeout,
+                   int mRecvBuffSize, int mXmitBuffSize) {
 /****************************************/
   /* Initialize all of the class data members */
   Init();
 
-  /* Call the 'C' implementation */
-  if(::InitSocket(&mSock, mSockType, mIpAddr, mPortNum) < 0) {
-    ::CloseSocket(&mSock);
-    for(int i = 0; i < NUM_LISTEN; i++) {
-      ::CloseSocket(&mClientSock[i]);
-    }
+  /* Save the incoming data */
+  this->mSockType = mSockType;
+  if((mSockType == SOCKET_TYPE_UDP_SERVER) || (mSockType == SOCKET_TYPE_UDP_CLIENT)) {
+    this->mSockProto = SOCKET_PROTOCOL_UDP;
+  }
+  else if((mSockType == SOCKET_TYPE_TCP_SERVER) || (mSockType == SOCKET_TYPE_TCP_CLIENT)) {
+    this->mSockProto = SOCKET_PROTOCOL_TCP;
+  }
+
+  /* Initialize the socket */
+  if(InitSocket(mIpAddr, mPortNum) < 0) {
+    CloseSocket();
   }
   else {
-    /* Save the incoming data */
-    this->mSockType = mSockType;
-    if((mSockType == SOCKET_TYPE_UDP_SERVER) || (mSockType == SOCKET_TYPE_UDP_CLIENT)) {
-      this->mSockProto = SOCKET_PROTOCOL_UDP;
-    }
-    else if((mSockType == SOCKET_TYPE_TCP_SERVER) || (mSockType == SOCKET_TYPE_TCP_CLIENT)) {
-      this->mSockProto = SOCKET_PROTOCOL_TCP;
-    }
-
     ConfigBlockingState(mBlocking);
     ConfigRecvBuffSize(mRecvBuffSize);
     ConfigXmitBuffSize(mXmitBuffSize);
@@ -57,133 +54,47 @@ Ethernet::Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, uint32_t mPortNum, in
 
 }
 
+
+/****************************************/
+int Ethernet::CloseSocket(void) {
+/****************************************/
+  /* Close the socket */
+  if(mSock.fd) {
+    CLOSE_SOCKET(mSock.fd);
+  }
+  memset(&mSock, 0, sizeof(mSock));
+
+  /* Close the client sockets */
+  for(int i = 0; i < NUM_LISTEN; i++) {
+    if(mClientSock[i].fd) {
+      CLOSE_SOCKET(mClientSock[i].fd);
+    }
+    memset(&mClientSock[i], 0, sizeof(Socket_t));
+  }
+
+  return(0);
+}
+
+
 /****************************************/
 Ethernet::~Ethernet(void) {
 /****************************************/
-
-  /* Call the 'C' implementation */
-  ::CloseSocket(&mSock);
-  for(int i = 0; i < NUM_LISTEN; i++) {
-    ::CloseSocket(&mClientSock[i]);
-  }
+  CloseSocket();
 }
 
 /****************************************/
-int32_t Ethernet::ConfigBlockingState(int32_t mBlocking) {
+int Ethernet::XmitData(unsigned char *mBuff, int mNumBytes) {
 /****************************************/
-  /* Sanity Check */
-  if(mBlocking == -1) {
-    return(0);
-  }
-
-  /* Configure the device */
-  SetBlockingState(mBlocking);
-  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::ConfigBlockingState(&this->mSock, this->mBlocking));
-  }
-  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::ConfigBlockingState(&this->mSockAcc, this->mBlocking));
-#endif
-  }
-
-  return(-1);
-}
-
-/****************************************/
-int32_t Ethernet::ConfigRecvBuffSize(int32_t mBuffSize) {
-/****************************************/
-  /* Sanity Check */
-  if(mBuffSize == -1) {
-    return(0);
-  }
-
-  /* Configure the device */
-  SetRecvBuffSize(mBuffSize);
-  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::ConfigRecvBuffSize(&this->mSock, this->mRecvBuffSize));
-  }
-  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::ConfigRecvBuffSize(&this->mSockAcc, this->mRecvBuffSize));
-#endif
-  }
-
-  return(-1);
-}
-
-/****************************************/
-int32_t Ethernet::ConfigXmitBuffSize(int32_t mBuffSize) {
-/****************************************/
-  /* Sanity Check */
-  if(mBuffSize == -1) {
-    return(0);
-  }
-
-  /* Configure the device */
-  SetXmitBuffSize(mBuffSize);
-  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::ConfigXmitBuffSize(&this->mSock, this->mXmitBuffSize));
-  }
-  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::ConfigXmitBuffSize(&this->mSockAcc, this->mXmitBuffSize));
-#endif
-  }
-
-  return(-1);
-}
-
-/****************************************/
-int32_t Ethernet::ConfigRecvTimeout(int32_t msec) {
-/****************************************/
-  /* Sanity Check */
-  if(msec == -1) {
-    return(0);
-  }
-
-  /* Configure the device */
-  SetRecvTimeout(msec);
-  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::ConfigRecvSocketTimeout(&this->mSock, this->mRecvTimeout));
-  }
-  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::ConfigRecvSocketTimeout(&this->mSockAcc, this->mRecvTimeout));
-#endif
-  }
-
-  return(-1);
-}
-
-/****************************************/
-int32_t Ethernet::ConfigXmitTimeout(int32_t msec) {
-/****************************************/
-  /* Sanity Check */
-  if(msec == -1) {
-    return(0);
-  }
-
-  /* Configure the device */
-  SetXmitTimeout(msec);
-  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::ConfigXmitSocketTimeout(&this->mSock, this->mXmitTimeout));
-  }
-  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::ConfigXmitSocketTimeout(&this->mSockAcc, this->mXmitTimeout));
-#endif
-  }
-
-  return(-1);
-}
-
-/****************************************/
-int32_t Ethernet::XmitData(unsigned char *mBuff, int32_t mNumBytes) {
-/****************************************/
+  /* Variable Declaration */
+  int mXmitBytes = 0;
 
   if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::XmitData(&mSock, mBuff, mNumBytes));
+    /* Send the data over the socket */
+    if((mXmitBytes = sendto(mSock.fd, mBuff, mNumBytes, 0, (struct sockaddr *)&mSock.mAddr, (int)mSock.mAddrLen)) < 0) {
+      printf("ERR: Failed to xmit socket data: %d of %d  (%d)\n", mXmitBytes, mNumBytes, errno);
+      mSock.mConnected = FALSE;
+      return(-1);
+    }
   }
   if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
 #if 0
@@ -191,15 +102,25 @@ int32_t Ethernet::XmitData(unsigned char *mBuff, int32_t mNumBytes) {
 #endif
   }
 
-  return(-1); 
+  return(mXmitBytes);
 }
 
 /****************************************/
-int32_t Ethernet::RecvData(unsigned char *mBuff, int32_t mNumBytes) {
+int Ethernet::RecvData(unsigned char *mBuff, int mNumBytes) {
 /****************************************/
+  /* Variable Declaration */
+  int i = 0;
+  int mRetVal = 0;
+  int mRecvBytes = 0;
 
   if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
-    return(::RecvData(&mSock, mBuff, mNumBytes));
+    for(i = 0, mRecvBytes = 0; (mRecvBytes < mNumBytes) && (i < MAX_TCP_READS); mRecvBytes += mRetVal, i++) {
+      if((mRetVal = recvfrom(mSock.fd, &mBuff[mRecvBytes], (mNumBytes - mRecvBytes), 0, (struct sockaddr *)&mSock.mAddr, (socklen_t*)&mSock.mAddrLen)) < 0) {
+        printf("ERR: Failed to recieve socket data: %d of %d\n", mRecvBytes, mNumBytes);
+        return(-1);
+      }
+    }
+
   }
   if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
 #if 0
@@ -207,13 +128,13 @@ int32_t Ethernet::RecvData(unsigned char *mBuff, int32_t mNumBytes) {
 #endif
   }
 
-  return(-1); 
+  return(mRecvBytes);
 }
 
 
 #include "pkt_types.h" 
 /****************************************/
-int32_t Ethernet::PollOpenSockets(void) {
+int Ethernet::PollOpenSockets(void) {
 /****************************************/
   /* Variable Declaration */
   int i = 0;

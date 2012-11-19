@@ -55,11 +55,6 @@
 #define SOCKET_SYNC     (0xCABE)
 
 
-/* The 'C' definitions */
-#ifdef __cplusplus
-extern "C" {
-#endif
-    
 
 /* enums */
 typedef enum {
@@ -79,45 +74,25 @@ typedef enum {
 
 /* typedef */
 typedef struct {
-  int32_t mSync;  /* 0xCABE */
-  int32_t mNumBytes;
-  int32_t mTimeTagSec; /* NTP time */
-  int32_t mDeviceId;
-  int32_t mMsgType;
-  int32_t checkSum; /* Checksum of the data payload */
+  int mSync;  /* 0xCABE */
+  int mNumBytes;
+  int mTimeTagSec; /* NTP time */
+  int mDeviceId;
+  int mMsgType;
+  int checkSum; /* Checksum of the data payload */
 } PacketHeader_t;
 
 
 typedef struct {
-    int32_t fd;
-    int32_t mAddrLen;
-    int32_t mConnected;
+    int fd;
+    int mAddrLen;
+    int mConnected;
 #ifndef _WIN32
     struct sockaddr_in mAddr;
 #endif
     PacketHeader_t mHdr;
 } Socket_t;
 
-
-/* C function declarations */
-int32_t InitSocket(Socket_t *mSock, SOCKET_TYPE_e mSockType, char *mIpAddr, uint32_t mPortNum);
-int32_t CloseSocket(Socket_t *mSock);
-int32_t PollOpenSockets(void);
-int32_t AcceptConnection(Socket_t *mSock, Socket_t *mSockAcc);
-int32_t QueryTCPConnectionState(Socket_t *mSock, Socket_t *mSockAcc);
-int32_t RecvData(Socket_t *mSock, unsigned char *buff, int32_t mNumBytes);
-int32_t XmitData(Socket_t *mSock, unsigned char *buff, int32_t mNumBytes);
-
-int32_t ConfigBlockingState(Socket_t *mSock, int32_t mBlocking);
-int32_t ConfigRecvBuffSize(Socket_t *mSock, int32_t mBuffSize);
-int32_t ConfigXmitBuffSize(Socket_t *mSock, int32_t mBuffSize);
-int32_t ConfigRecvSocketTimeout(Socket_t *mSock, int32_t msec);
-int32_t ConfigXmitSocketTimeout(Socket_t *mSock, int32_t msec);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 
 /* The 'CPP' definitions */
@@ -126,42 +101,44 @@ int32_t ConfigXmitSocketTimeout(Socket_t *mSock, int32_t msec);
 class Ethernet {
 
   private:
-    int32_t Init(void);
+    int Init(void);
+    int InitSocket(char *mIpAddr, unsigned int mPortNum);
+    int CloseSocket(void);
 
   public:
-    Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, uint32_t mPortNum,
-                   int32_t mBlocking = -1,
-                   int32_t mRecvTimeout = -1, int32_t mXmitTimeout = -1,
-                   int32_t mRecvBuffSize = -1, int32_t mXmitBuffSize = -1);
+    Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, uint mPortNum,
+                   int mBlocking = -1,
+                   int mRecvTimeout = -1, int mXmitTimeout = -1,
+                   int mRecvBuffSize = -1, int mXmitBuffSize = -1);
 
    ~Ethernet(void);
 
-    int32_t ConfigBlockingState(int32_t mBlocking);
-    int32_t ConfigRecvBuffSize(int32_t mBuffSize);
-    int32_t ConfigXmitBuffSize(int32_t mBuffSize);
-    int32_t ConfigRecvTimeout(int32_t msec);
-    int32_t ConfigXmitTimeout(int32_t msec);
+    int ConfigBlockingState(int mBlocking);
+    int ConfigRecvBuffSize(int mBuffSize);
+    int ConfigXmitBuffSize(int mBuffSize);
+    int ConfigRecvTimeout(int msec);
+    int ConfigXmitTimeout(int msec);
 
-    int32_t PollOpenSockets(void);
-    int32_t RecvData(unsigned char *buff, int32_t mNumBytes);
-    int32_t XmitData(unsigned char *buff, int32_t mNumBytes);
+    int PollOpenSockets(void);
+    int RecvData(unsigned char *buff, int mNumBytes);
+    int XmitData(unsigned char *buff, int mNumBytes);
 
     SOCKET_TYPE_e     GetSocketType() { return(this->mSockType); }
     SOCKET_PROTOCOL_e GetSocketProtocol() { return(this->mSockProto); }
-    int32_t GetBlockingState() { return(this->mBlocking); }
-    int32_t GetRecvBuffSize() { return(this->mRecvBuffSize); }
-    int32_t GetXmitBuffSize() { return(this->mXmitBuffSize); }
-    int32_t GetRecvTimeout() { return(this->mRecvTimeout); }
-    int32_t GetXmitTimeout() { return(this->mXmitTimeout); }
+    int GetBlockingState() { return(this->mBlocking); }
+    int GetRecvBuffSize() { return(this->mRecvBuffSize); }
+    int GetXmitBuffSize() { return(this->mXmitBuffSize); }
+    int GetRecvTimeout() { return(this->mRecvTimeout); }
+    int GetXmitTimeout() { return(this->mXmitTimeout); }
 
   protected:
     SOCKET_TYPE_e     SetSocketType(SOCKET_TYPE_e mSockType) { return(this->mSockType = mSockType); }
     SOCKET_PROTOCOL_e SetSocketProtocol(SOCKET_PROTOCOL_e mSockProto) { return(this->mSockProto = mSockProto); }
-    int32_t SetBlockingState(int32_t mBlocking) { return(this->mBlocking = mBlocking); }
-    int32_t SetRecvBuffSize(int32_t mBuffSize) { return(this->mRecvBuffSize = mBuffSize); }
-    int32_t SetXmitBuffSize(int32_t mBuffSize) { return(this->mXmitBuffSize = mBuffSize); }
-    int32_t SetRecvTimeout(int32_t msec) { return(this->mRecvTimeout = msec); }
-    int32_t SetXmitTimeout(int32_t msec) { return(this->mXmitTimeout = msec); }
+    int SetBlockingState(int mBlocking) { return(this->mBlocking = mBlocking); }
+    int SetRecvBuffSize(int mBuffSize) { return(this->mRecvBuffSize = mBuffSize); }
+    int SetXmitBuffSize(int mBuffSize) { return(this->mXmitBuffSize = mBuffSize); }
+    int SetRecvTimeout(int msec) { return(this->mRecvTimeout = msec); }
+    int SetXmitTimeout(int msec) { return(this->mXmitTimeout = msec); }
 
   private:
 
@@ -171,11 +148,11 @@ class Ethernet {
 
     SOCKET_TYPE_e mSockType;
     SOCKET_PROTOCOL_e mSockProto;
-    int32_t mBlocking;
-    int32_t mRecvBuffSize;
-    int32_t mXmitBuffSize;
-    int32_t mRecvTimeout;
-    int32_t mXmitTimeout;
+    int mBlocking;
+    int mRecvBuffSize;
+    int mXmitBuffSize;
+    int mRecvTimeout;
+    int mXmitTimeout;
 };
 
 #endif
