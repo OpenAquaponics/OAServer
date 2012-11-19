@@ -15,7 +15,7 @@ int Ethernet::Init(void) {
   mRecvBuffSize = -1;
   mXmitBuffSize = -1;
   
-  data = NULL;
+  mData = NULL;
 
   memset(&mSock, 0, sizeof(mSock));
   for(int i = 0; i < NUM_LISTEN; i++) {
@@ -157,8 +157,7 @@ int Ethernet::PollOpenSockets(void) {
   }
 
   /* Wait for activity on one of the sockets , timeout is NULL , so wait indefinitely */
-  /* TODO - Why the +3?? */
-  if((select(NUM_LISTEN + 3 , &mReadFds , NULL , NULL , NULL) < 0) && (errno != EINTR)) {
+  if((select(mMaxSelectNum + 1, &mReadFds , NULL , NULL , NULL) < 0) && (errno != EINTR)) {
     printf("ERR: Selection error\n");
   }
 
@@ -170,13 +169,18 @@ int Ethernet::PollOpenSockets(void) {
     }
 
     /* Inform the user of new incoming socket number */
-    printf("New connection , socket fd is %d , ip is : %s , port : %d \n" , mClientSock[i].fd, inet_ntoa(mClientSock[i].mAddr.sin_addr) , ntohs(mClientSock[i].mAddr.sin_port));
+    printf("New connection , socket fd is %d , ip is : %s , port : %d \n" , mNewSock, inet_ntoa(mSock.mAddr.sin_addr) , ntohs(mSock.mAddr.sin_port));
 
     /* Add new incoming socket connections to the array */
     for(i = 0; i < NUM_LISTEN; i++) {
       if(mClientSock[i].fd == 0) {
-        mClientSock[i].fd = mNewSock;
+        mClientSock[i].fd       = mNewSock;
+        mClientSock[i].mAddr    = mSock.mAddr;
         mClientSock[i].mAddrLen = sizeof(mClientSock[i].mAddr);
+        /* Detemine the highest file descriptor the select will trigger on */
+        if(mNewSock > mMaxSelectNum) {
+          mMaxSelectNum = mNewSock;
+        }
         printf("INFO: Adding to list of sockets as %d\n" , i);
         i = NUM_LISTEN;
       }
@@ -189,7 +193,6 @@ int Ethernet::PollOpenSockets(void) {
   /* Process all of the remaining sockets for any data */
   for(i = 0; i < NUM_LISTEN; i++) {
     s = mClientSock[i].fd;
-
     if(FD_ISSET(s ,&mReadFds)) {
       /* Check the make sure the stream is not closed */
       if((mRetVal = recv(s, eof, sizeof(eof), MSG_PEEK)) == 0) {

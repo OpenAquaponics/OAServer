@@ -1,10 +1,16 @@
 
 
+#include "common_types.h"
+#include "pkt_types.h"
+#include "Ethernet.h"
+#include "Database.h"
 
 #include <iostream>
 
-#include "Ethernet.h"
-#include <sqlite3.h>
+
+using namespace std;
+
+
 
 static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
   for(int i = 0; i < argc; i++) {
@@ -95,32 +101,10 @@ int main(int argc, char *argv[]) {
 
 #if 1
 
-#include "common_types.h"
-#include "pkt_types.h"
-#include "Ethernet.h"
-#include "Database.h"
-
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 
 
 
-using namespace std;
 
-
-
-#include <stdio.h>
-#include <string.h> //strlen
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h> //close
-#include <arpa/inet.h>  //close
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
 
 #if 0
   int sock
@@ -154,7 +138,6 @@ int rpiServerMain(void) {
   //accept the incoming connection
   puts("Waiting for connections...");
   while(TRUE) {
-
     mSock.PollOpenSockets();
 
     /* The packet header and data are public variables from the class, this is a kludge */
@@ -168,6 +151,8 @@ int rpiServerMain(void) {
  
       //strftime('%s','2004-01-01 02:34:57')
       meas_data_t *measData = (meas_data_t*)mSock.mData;
+      printf("INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d-%d-%d', '%f')\n", 
+              1, measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day, *((unsigned int*)mSock.mData));
       sprintf(pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d-%d-%d', '%f')", 
               1, measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day, *((unsigned int*)mSock.mData));
  

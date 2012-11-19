@@ -151,6 +151,7 @@ class Ethernet {
 
     Socket_t mSock;
     Socket_t mClientSock[NUM_LISTEN]; /* Make this dynamic */
+    int mMaxSelectNum;
     fd_set   mReadFds;
 
     SOCKET_TYPE_e mSockType;

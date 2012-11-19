@@ -6,113 +6,116 @@
 /****************************************/
 int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
 /****************************************/
-   /* Variable Declaration */
-   int mRetVal = 0;
-   int mOpt = TRUE;
-   
-   /* UDP_SERVER */
-   if(mSockType == SOCKET_TYPE_UDP_SERVER) {
-     /* Open the socket file descriptor */
-     if((mSock.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0 ) {
-       printf("ERR: Opening UDP server socket\n");
-       return(-1);
-     }
+  /* Variable Declaration */
+  int mRetVal = 0;
+  int mOpt = TRUE;
+  
+  /* UDP_SERVER */
+  if(mSockType == SOCKET_TYPE_UDP_SERVER) {
+    /* Open the socket file descriptor */
+    if((mSock.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0 ) {
+      printf("ERR: Opening UDP server socket\n");
+      return(-1);
+    }
 
-     /* Load the socket structure */
-     memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
-     mSock.mAddr.sin_family      = AF_INET;
-     mSock.mAddr.sin_port        = htons(mPortNum);
-     mSock.mAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-     mSock.mAddrLen = sizeof(mSock.mAddr);
-     
-     /* Bind on the socket port */
-     if((mRetVal = bind(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr))) < 0 ) {
-       printf("ERR: Binding on port %d\n", mPortNum);
-       CloseSocket();
-       return(-1);
-     }
-   }
-   /* UDP_CLIENT */
-   else if(mSockType == SOCKET_TYPE_UDP_CLIENT) {
-     /* Open the socket file descriptor */
-     if((mSock.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0 ) {
-       printf("ERR: Opening UDP client socket\n");
-       return(-1);
-     }
-     
-     /* Load the socket structure */
-     memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
-     mSock.mAddr.sin_family      = AF_INET;
-     mSock.mAddr.sin_port        = htons(mPortNum);
-     mSock.mAddr.sin_addr.s_addr = inet_addr(mIpAddr);
-     mSock.mAddrLen = sizeof(mSock.mAddr);
-   }
-   /* TCP_SERVER */
-   else if(mSockType == SOCKET_TYPE_TCP_SERVER) {
-     /* Open the socket file descriptor */
-     if((mSock.fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0 ) {
-       printf("ERR: Opening TCP server socket\n");
-       return(-1);
-     }
+    /* Load the socket structure */
+    memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
+    mSock.mAddr.sin_family      = AF_INET;
+    mSock.mAddr.sin_port        = htons(mPortNum);
+    mSock.mAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    mSock.mAddrLen = sizeof(mSock.mAddr);
+    
+    /* Bind on the socket port */
+    if((mRetVal = bind(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr))) < 0 ) {
+      printf("ERR: Binding on port %d\n", mPortNum);
+      CloseSocket();
+      return(-1);
+    }
+  }
+  /* UDP_CLIENT */
+  else if(mSockType == SOCKET_TYPE_UDP_CLIENT) {
+    /* Open the socket file descriptor */
+    if((mSock.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0 ) {
+      printf("ERR: Opening UDP client socket\n");
+      return(-1);
+    }
+    
+    /* Load the socket structure */
+    memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
+    mSock.mAddr.sin_family      = AF_INET;
+    mSock.mAddr.sin_port        = htons(mPortNum);
+    mSock.mAddr.sin_addr.s_addr = inet_addr(mIpAddr);
+    mSock.mAddrLen = sizeof(mSock.mAddr);
+  }
+  /* TCP_SERVER */
+  else if(mSockType == SOCKET_TYPE_TCP_SERVER) {
+    /* Open the socket file descriptor */
+    if((mSock.fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0 ) {
+      printf("ERR: Opening TCP server socket\n");
+      return(-1);
+    }
 
-     /* Set master socket to allow multiple connections */
-     if(setsockopt(mSock.fd, SOL_SOCKET, SO_REUSEADDR, (char *)&mOpt, sizeof(mOpt)) < 0 ) {
-       printf("ERR: Configuring socket to reuseable\n");
-       CloseSocket();
-       return(-1);
-     }
-     
-     /* Load the socket structure */
-     memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
-     mSock.mAddr.sin_family      = AF_INET;
-     mSock.mAddr.sin_port        = htons(mPortNum);
-     mSock.mAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-     mSock.mAddrLen = sizeof(mSock.mAddr);
+    /* Set master socket to allow multiple connections */
+    if(setsockopt(mSock.fd, SOL_SOCKET, SO_REUSEADDR, (char *)&mOpt, sizeof(mOpt)) < 0 ) {
+      printf("ERR: Configuring socket to reuseable\n");
+      CloseSocket();
+      return(-1);
+    }
+    
+    /* Load the socket structure */
+    memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
+    mSock.mAddr.sin_family      = AF_INET;
+    mSock.mAddr.sin_port        = htons(mPortNum);
+    mSock.mAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    mSock.mAddrLen = sizeof(mSock.mAddr);
 
-     /* Bind on the socket port */
-     if((mRetVal = bind(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr))) < 0 ) {
-       printf("ERR: Binding on port %d\n", mPortNum);
-       CloseSocket();
-       return(-1);
-     }
+    /* Bind on the socket port */
+    if((mRetVal = bind(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr))) < 0 ) {
+      printf("ERR: Binding on port %d\n", mPortNum);
+      CloseSocket();
+      return(-1);
+    }
 
-     /* Listen on the port */
-     if(listen(mSock.fd, NUM_LISTEN) < 0) {
-       printf("ERR: Listen on port %d\n", mPortNum);
-       CloseSocket();
-       return(-1);
-     }
-   }
-   /* TCP_CLIENT */
-   else if(mSockType == SOCKET_TYPE_TCP_CLIENT) {
-     /* Open the socket file descriptor */
-     if((mSock.fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0 ) {
-       printf("ERR: Opening TCP client socket\n");
-       return(-1);
-     }
-     
-     /* Load the socket structure */
-     memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
-     mSock.mAddr.sin_family      = AF_INET;
-     mSock.mAddr.sin_port        = htons(mPortNum);
-     mSock.mAddr.sin_addr.s_addr = inet_addr(mIpAddr);
-     mSock.mAddrLen = sizeof(mSock.mAddr);
+    /* Listen on the port */
+    if(listen(mSock.fd, NUM_LISTEN) < 0) {
+      printf("ERR: Listen on port %d\n", mPortNum);
+      CloseSocket();
+      return(-1);
+    }
+  }
+  /* TCP_CLIENT */
+  else if(mSockType == SOCKET_TYPE_TCP_CLIENT) {
+    /* Open the socket file descriptor */
+    if((mSock.fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0 ) {
+      printf("ERR: Opening TCP client socket\n");
+      return(-1);
+    }
+    
+    /* Load the socket structure */
+    memset(&mSock.mAddr, 0, sizeof(mSock.mAddr));
+    mSock.mAddr.sin_family      = AF_INET;
+    mSock.mAddr.sin_port        = htons(mPortNum);
+    mSock.mAddr.sin_addr.s_addr = inet_addr(mIpAddr);
+    mSock.mAddrLen = sizeof(mSock.mAddr);
 
-     mSock.mConnected = FALSE;
-     /* Connect the socket */
-     if(connect(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr)) < 0) {
-       printf("ERR: Connecting to remote TCP server\n");
-       CloseSocket();
-       return(-1);
-     }
-     mSock.mConnected = TRUE;
-   }
-   else {
-     printf("ERR: Invalid socket type: %d\n", mSockType);
-     return(-1);
-   }
+    mSock.mConnected = FALSE;
+    /* Connect the socket */
+    if(connect(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr)) < 0) {
+      printf("ERR: Connecting to remote TCP server\n");
+      CloseSocket();
+      return(-1);
+    }
+    mSock.mConnected = TRUE;
+  }
+  else {
+    printf("ERR: Invalid socket type: %d\n", mSockType);
+    return(-1);
+  }
 
-   return(0);
+  /* Set the select maximum socket number */
+  mMaxSelectNum = mSock.fd;
+
+  return(0);
 }
 
 
