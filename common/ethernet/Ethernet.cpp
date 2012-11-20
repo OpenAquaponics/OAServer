@@ -194,6 +194,13 @@ int Ethernet::PollOpenSockets(void) {
   for(i = 0; i < NUM_LISTEN; i++) {
     s = mClientSock[i].fd;
     if(FD_ISSET(s ,&mReadFds)) {
+      /* Clear all of the data structures */
+      memset(&mPktHdr, 0, sizeof(mPktHdr));
+      if(mData) {
+        free(mData);
+        mData = NULL;
+      }
+
       /* Check the make sure the stream is not closed */
       if((mRetVal = recv(s, eof, sizeof(eof), MSG_PEEK)) == 0) {
         /* Somebody disconnected , get his details and print */

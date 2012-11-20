@@ -80,6 +80,7 @@ typedef struct {
   int mDeviceId;
   int mMsgType;
   int checkSum; /* Checksum of the data payload */
+int pad;
 } PacketHeader_t;
 
 

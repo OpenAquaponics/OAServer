@@ -12,15 +12,6 @@ using namespace std;
 
 
 
-static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
-  for(int i = 0; i < argc; i++) {
-    std::cout << szColName[i] << " = " << argv[i] << std::endl;
-  }
-  std::cout << "\n";
-  return(0);
-}
-
-
 #if 0
 
 int OAServerMain(void) {
@@ -122,46 +113,31 @@ int rpiServerMain(void) {
   /* Variable Declaration */
   int mRetVal = 0;
   int i;
-  char buffer[1025];  //data buffer of 1K
-  char eof[16];
-  sqlite3 *mDbPtr = NULL;
-  char *mDbErrMsg = NULL;
-  char pSQL[512];
-
-  int32_t retVal = 0;
-  unsigned char *data = NULL;
-  FILE *outfile = NULL;
 
   Ethernet mSock = Ethernet(SOCKET_TYPE_TCP_SERVER, (char*)"127.0.0.1", 50000);
+  Database mDb   = Database();
 
-
-  //accept the incoming connection
-  puts("Waiting for connections...");
+  /* Accept the incoming connections and handle the data */
+  printf("Waiting for connections...\n");
   while(TRUE) {
     mSock.PollOpenSockets();
 
     /* The packet header and data are public variables from the class, this is a kludge */
     if(mSock.mData) {
 
-      if(mRetVal = sqlite3_open("./temp.db", &mDbPtr)) {
-        printf("ERR: Failed to open database\n");
-        exit(-1);
-      }
- 
- 
       //strftime('%s','2004-01-01 02:34:57')
       meas_data_t *measData = (meas_data_t*)mSock.mData;
-      printf("INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d-%d-%d', '%f')\n", 
-              1, measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day, *((unsigned int*)mSock.mData));
-      sprintf(pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d-%d-%d', '%f')", 
-              1, measData->rpiHdr.year, measData->rpiHdr.month, measData->rpiHdr.day, *((unsigned int*)mSock.mData));
- 
-      if(sqlite3_exec(mDbPtr, pSQL, callback, 0, &mDbErrMsg)) {
-        std::cout << "Sql Error: " << mDbErrMsg << std::endl;
-        sqlite3_free(mDbErrMsg);
-      }
-    }
+      printf("INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d', '%f')\n", 
+              1, measData->rpiHdr.year, ((float*)mSock.mData)[4]);
 
+
+      sprintf(mDb.pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d', '%f')", 
+              1, measData->rpiHdr.year, ((float*)mSock.mData)[4]);
+      mDb.ExecuteCommand();
+
+      /* Converts the seconds timetag into human readable!!! */
+      /* SELECT datetime(mSampleTime, 'unixepoch') FROM Statistics; */
+    }
   }
 
   return 0;
