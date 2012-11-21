@@ -22,7 +22,7 @@ ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
 ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE}
 
 # Files to be compiled by the makefile
-SRCS = OAServer.cpp
+SRCS = OAServer.cpp Application.cpp
 OBJS = ${SRCS:.cpp=.o}
 
 # Main build target

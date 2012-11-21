@@ -36,7 +36,7 @@ class Database {
     int CloseDatabase(void);
 
   public:
-    Database(void);
+    Database(char *mDbName);
    ~Database(void);
 
     int ExecuteCommand();
@@ -48,7 +48,7 @@ class Database {
 
 
   private:
-    const char *mDbName;
+    char mDbName[128];
     sqlite3 *mDbPtr;
     char *mDbErrMsg;
 

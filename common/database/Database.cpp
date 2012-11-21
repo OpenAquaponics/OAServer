@@ -13,11 +13,12 @@ static int callback(void *NotUsed, int argc, char **argv, char**szColName) {
 
 
 /****************************************/
-Database::Database(void) {
+Database::Database(char *mDbName) {
 /****************************************/
   Init();
-  OpenDatabase();
 
+  sprintf(this->mDbName, "%s", mDbName);
+  OpenDatabase();
 }
 
 

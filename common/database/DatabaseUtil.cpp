@@ -5,7 +5,6 @@
 int Database::Init(void) {
 /****************************************/
 
-  mDbName = "./temp.db";
   mDbPtr = NULL;
   mDbErrMsg = NULL;
   memset(pSQL, 0, sizeof(pSQL));
