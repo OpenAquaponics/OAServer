@@ -123,16 +123,20 @@ int rpiServerMain(void) {
     mSock.PollOpenSockets();
 
     /* The packet header and data are public variables from the class, this is a kludge */
-    if(mSock.mData) {
+    if(mSock.pData) {
 
       //strftime('%s','2004-01-01 02:34:57')
-      meas_data_t *measData = (meas_data_t*)mSock.mData;
+      PktStatistics_t *pStatPkt = (PktStatistics_t*)mSock.pData;
       printf("INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d', '%f')\n", 
-              1, measData->rpiHdr.year, ((float*)mSock.mData)[4]);
+              pStatPkt->mHdr.mDeviceId,
+              pStatPkt->mHdr.mTimeTagSec,
+              pStatPkt->mWaterLevel);
 
+      sprintf(mDb.pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d', '%f')\n", 
+              pStatPkt->mHdr.mDeviceId,
+              pStatPkt->mHdr.mTimeTagSec,
+              pStatPkt->mWaterLevel);
 
-      sprintf(mDb.pSQL, "INSERT INTO Statistics(mNodeId, mSampleTime, mWaterLevel) VALUES ('%d', '%d', '%f')", 
-              1, measData->rpiHdr.year, ((float*)mSock.mData)[4]);
       mDb.ExecuteCommand();
 
       /* Converts the seconds timetag into human readable!!! */

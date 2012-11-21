@@ -20,8 +20,10 @@
 #endif
 
 /* user includes */
+#include "pkt_types.h"
 
 
+/* defines */
 #ifdef _WIN32
  #define CLOSE_SOCKET(sock)           (closesocket(sock))
  #define WRITE_SOCKET(sock, buf, len) (send(sock, buf, len, 0))
@@ -34,26 +36,9 @@
  #define SLEEP(x)                     (sleep(x))
 #endif
  
-#define NUM_LISTEN    (1)
-
-/**********************/
-/* REMOVE THIS */
-#ifndef FALSE
- #define FALSE (0)
-#endif
-
-#ifndef TRUE
- #define TRUE (!FALSE)
-#endif
-
-#ifndef NULL
- #define NULL (0)
-#endif
-/**********************/
-/* defines */
 #define MAX_TCP_READS   (200)
 #define SOCKET_SYNC     (0xCABE)
-
+#define NUM_LISTEN      (1) /* This will be removed and the listen count will be dynamic */
 
 
 /* enums */
@@ -65,6 +50,7 @@ typedef enum {
     SOCKET_TYPE_TCP_CLIENT
 } SOCKET_TYPE_e;
 
+
 typedef enum {
     SOCKET_PROTOCOL_INVALID = 0,
     SOCKET_PROTOCOL_UDP,
@@ -74,31 +60,16 @@ typedef enum {
 
 /* typedef */
 typedef struct {
-  int mSync;  /* 0xCABE */
-  int mNumBytes;
-  int mTimeTagSec; /* NTP time */
-  int mDeviceId;
-  int mMsgType;
-  int checkSum; /* Checksum of the data payload */
-int pad;
-} PacketHeader_t;
-
-
-typedef struct {
     int fd;
     int mAddrLen;
     int mConnected;
 #ifndef _WIN32
     struct sockaddr_in mAddr;
 #endif
-    PacketHeader_t mHdr;
 } Socket_t;
 
 
-
-/* The 'CPP' definitions */
-#ifdef __cplusplus
-
+/* The class definitions */
 class Ethernet {
 
   private:
@@ -134,8 +105,8 @@ class Ethernet {
 
 
     /**********************************/
-    /* TODO - Temp variable, this needs to be deleted */
-    unsigned char *mData;
+    /* TODO - Temp variable, this needs to be deleted and proper public method exposed */
+    unsigned char  *pData;
     PacketHeader_t mPktHdr;
     /**********************************/
 
@@ -149,6 +120,7 @@ class Ethernet {
     int SetXmitTimeout(int msec) { return(this->mXmitTimeout = msec); }
 
   private:
+    int ClearPacket();
 
     Socket_t mSock;
     Socket_t mClientSock[NUM_LISTEN]; /* Make this dynamic */
@@ -162,9 +134,7 @@ class Ethernet {
     int mXmitBuffSize;
     int mRecvTimeout;
     int mXmitTimeout;
-
 };
 
-#endif
 
 #endif /* _ETHERNET_H_ */

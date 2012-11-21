@@ -26,7 +26,29 @@ typedef enum {
   ADD_PLANT
 } PACKET_TYPE_e;
 
+
 /* typedefs */
+typedef struct {
+  int mSync;        /* 0xCABE */
+  int mNumBytes;    /* Number of bytes in the payload */
+  int mTimeTagSec;  /* NTP(?) time in secs */
+  int mDeviceId;
+  int mMsgType;
+  int mCheckSum;    /* Checksum of just payload */
+} PacketHeader_t;
+
+typedef struct {
+  PacketHeader_t mHdr;
+  float mTempAirIndoor;
+  float mTempAirOutdoor;
+  float mTempWater;
+  float mHumidityIndoor;
+  float mHumidityOutdoor;
+  float mWaterLevel;
+  float mBattaryVoltage;
+  float mSolarPanelVoltage;
+} PktStatistics_t;
+
 typedef struct {
   uint32_t  year;
   uint32_t  month;

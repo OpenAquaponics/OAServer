@@ -15,7 +15,7 @@ int Ethernet::Init(void) {
   mRecvBuffSize = -1;
   mXmitBuffSize = -1;
   
-  mData = NULL;
+  pData = NULL;
 
   memset(&mSock, 0, sizeof(mSock));
   for(int i = 0; i < NUM_LISTEN; i++) {
@@ -134,7 +134,19 @@ int Ethernet::RecvData(unsigned char *mBuff, int mNumBytes) {
 }
 
 
-#include "pkt_types.h" 
+/****************************************/
+int Ethernet::ClearPacket(void) {
+/****************************************/
+  /* Clear all of the data structures */
+  if(pData) {
+    free(pData);
+    pData = NULL;
+  }
+
+  return(0);
+}
+
+
 /****************************************/
 int Ethernet::PollOpenSockets(void) {
 /****************************************/
@@ -194,12 +206,8 @@ int Ethernet::PollOpenSockets(void) {
   for(i = 0; i < NUM_LISTEN; i++) {
     s = mClientSock[i].fd;
     if(FD_ISSET(s ,&mReadFds)) {
-      /* Clear all of the data structures */
-      memset(&mPktHdr, 0, sizeof(mPktHdr));
-      if(mData) {
-        free(mData);
-        mData = NULL;
-      }
+      /* Clear the buffer data */
+      ClearPacket();
 
       /* Check the make sure the stream is not closed */
       if((mRetVal = recv(s, eof, sizeof(eof), MSG_PEEK)) == 0) {
@@ -215,13 +223,13 @@ int Ethernet::PollOpenSockets(void) {
       /* TODO - This needs to have a functional callback, inherited method, or msq in order to send data to processing task */
       else {
         if((mRetVal = read(s , &mPktHdr, sizeof(mPktHdr))) == sizeof(mPktHdr)) {
-          if(mData) {
-            free(mData);
-            mData = NULL;
-          }
-
-          if((mData = (unsigned char*)malloc(mPktHdr.mNumBytes)) != NULL) {
-            mRetVal = read(s, mData, mPktHdr.mNumBytes);
+          ClearPacket();
+          if((pData = (unsigned char*)malloc(sizeof(mPktHdr) + mPktHdr.mNumBytes)) != NULL) {
+            memcpy(pData, &mPktHdr, sizeof(mPktHdr));
+            if((mRetVal = read(s, (void*)&pData[sizeof(mPktHdr)], mPktHdr.mNumBytes)) != mPktHdr.mNumBytes) {
+              printf("ERR: Error reading socket data\n");
+              ClearPacket();
+            }
           }
         }
       }
