@@ -78,7 +78,7 @@ class Ethernet {
     int CloseSocket(void);
 
   public:
-    Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, uint mPortNum,
+    Ethernet(SOCKET_TYPE_e mSockType, char *mIpAddr, unsigned int mPortNum,
                    int mBlocking = -1,
                    int mRecvTimeout = -1, int mXmitTimeout = -1,
                    int mRecvBuffSize = -1, int mXmitBuffSize = -1);
