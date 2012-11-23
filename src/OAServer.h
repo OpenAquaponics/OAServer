@@ -30,12 +30,19 @@ class OAServer {
    ~OAServer(void);
 
     int Run(void);
+    int ParseSocketData(void);
+    int ExecuteSQLQuery(void);
+
+    int SetVerbose(int v) { this->mVerbose = v; };
+    int GetVerbose(void)  { return(this->mVerbose); };
 
   protected:
 
   private:
     Ethernet *pSock;
     Database *pDb;
+
+    int mVerbose;
 
 };
 

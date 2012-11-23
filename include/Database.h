@@ -48,7 +48,7 @@ class Database {
 
 
   private:
-    char mDbName[128];
+    char mDbName[1024];
     sqlite3 *mDbPtr;
     char *mDbErrMsg;
 

@@ -104,6 +104,7 @@ int rpiServerMain(void) {
   /* Variable Declaration */
   OAServer mOAServer((char*)"127.0.0.1", 50000, (char*)"./temp.db");
 
+  mOAServer.SetVerbose(TRUE);
   mOAServer.Run();
 
   return(0);

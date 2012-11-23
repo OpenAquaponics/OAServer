@@ -20,10 +20,17 @@
 
 /* enums */
 typedef enum {
-  ADD_MEASUREMENT = 1,
-  ADD_WATER,
-  ADD_FISH,
-  ADD_PLANT
+  /* OANode message types */
+  OANODE_ADD_MEASUREMENT = 1,
+  OANODE_ADD_WATER,
+  OANODE_ADD_FISH,
+  OANODE_ADD_PLANT,
+  /* OAMobile message types */
+  OAMOBILE_REQUEST_DATA = 1000,
+  /* OAServer message types */
+  OASERVER_STATISTICS_DATA = 2000,
+  OASERVER_NODE_CONFIG,
+  OASERVER_ACCOUNTING,
 } PACKET_TYPE_e;
 
 
@@ -50,37 +57,27 @@ typedef struct {
 } PktStatistics_t;
 
 typedef struct {
-  uint32_t  year;
-  uint32_t  month;
-  uint32_t  day;
-} rpi_pkt_t;
+  PacketHeader_t mHdr;
+  char mDescription[256];
+  int mSamplePeriodSecs;
+  int mLastUpdate;
+  int mNumFish;
+  int mNumPlants;
+} PktNodeConfig_t;
 
 typedef struct {
-  rpi_pkt_t rpiHdr;
-  uint32_t  measType;
-  float     measData;
-  char      comment[256];
-} meas_data_t;
+  PacketHeader_t mHdr;
+  int mDate;
+  char mDescription[256];
+  float mAmount;
+} PktAccounting_t;
 
-typedef struct {
-  rpi_pkt_t rpiHdr;
-  float     waterData;
-  char      comment[256];
-} water_data_t;
 
-typedef struct {
-  rpi_pkt_t rpiHdr;
-  uint32_t  fishType;
-  uint32_t  fishSize;
-  char      comment[256];
-} fish_data_t;
 
-typedef struct {
-  rpi_pkt_t rpiHdr;
-  uint32_t  plantType;
-  uint32_t  plantSize;
-  char      comment[256];
-} plant_data_t;
+
+
+
+
 
 
 /* const string */
@@ -90,7 +87,6 @@ typedef struct {
   char suffix[16];
   char comment[64];
 } elem_data_t;
-
 
 const elem_data_t meas_type[] = {
   {0, "PH", "pH", "Water pH"},
