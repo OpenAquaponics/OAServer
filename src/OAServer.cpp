@@ -9,7 +9,7 @@ OAServer::OAServer(char *mIpAddr, unsigned int mPortNum, char *mDbName) {
   pSock = new Ethernet(SOCKET_TYPE_TCP_SERVER, mIpAddr, mPortNum);
   pDb   = new Database(mDbName);
 
-  mVerbose = FALSE;
+  mVerbose = TRUE;
 }
 
 
@@ -41,7 +41,7 @@ int OAServer::ParseSocketData(void) {
     case OASERVER_STATISTICS_DATA: {
       PktStatistics_t *pPkt = (PktStatistics_t*)pSock->pData;
       sprintf(pDb->pSQL, 
-        "INSERT INTO Statistics (mNodeId, mSampleTime, mTempAirIndoor, mTempAirOutdoor, mTempWater, mHumidityIndoor, mHumidityOutdoor, mWaterLevel, mBattaryVoltage, mSolarPanelVoltage) VALUES ('%d', '%d', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f');",
+        "INSERT INTO Statistics (mNodeId, mSampleTime, mTempAirIndoor, mTempAirOutdoor, mTempWater, mHumidityIndoor, mHumidityOutdoor, mWaterLevel, mBattaryVoltage, mSolarPanelVoltage) VALUES ('%d', '%d', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f');",
          pPkt->mHdr.mDeviceId, pPkt->mHdr.mTimeTagSec, pPkt->mTempAirIndoor,
          pPkt->mTempAirOutdoor, pPkt->mTempWater, pPkt->mHumidityIndoor,
          pPkt->mHumidityOutdoor, pPkt->mWaterLevel, pPkt->mBattaryVoltage,
@@ -57,13 +57,13 @@ int OAServer::ParseSocketData(void) {
     case OASERVER_ACCOUNTING: {
       PktAccounting_t *pPkt = (PktAccounting_t*)pSock->pData;
       sprintf(pDb->pSQL, 
-        "INSERT INTO Accounting (mDate, mDescription, mAmount) VALUES ('%d', '%s', '%f');",
+        "INSERT INTO Accounting (mDate, mDescription, mAmount) VALUES ('%d', '%s', '%.2f');",
          pPkt->mDate, pPkt->mDescription, pPkt->mAmount);
       break; }
     default: break;
   }
 
-  if(mVerbose) { printf("%s", pDb->pSQL); };
+  if(mVerbose) { printf("%s\n", pDb->pSQL); };
 
   return(0);
 }
@@ -83,7 +83,7 @@ int OAServer::Run(void) {
 /****************************************/
 
   /* Accept the incoming connections and handle the data */
-  printf("Waiting for connections...\n");
+  printf("INFO: OASever running, waiting for remote data to process ...\n");
   while(TRUE) {
     pSock->PollOpenSockets();
 
