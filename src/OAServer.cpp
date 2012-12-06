@@ -30,6 +30,7 @@ int OAServer::ParseSocketData(void) {
   //strftime('%s','2004-01-01 02:34:57')
   /* The brackets are needed to stop a 'crosses initialization' error for the pointers */
   switch(pHdr->mMsgType) {
+    /* TODO - Make this OAServer::OANODE_ADD_MEASUREMENT */
     case OANODE_ADD_MEASUREMENT:
       break;
     case OANODE_ADD_WATER:
