@@ -70,7 +70,6 @@ Ethernet::Ethernet(SOCKET_TYPE_e mSockType, Socket_t mSock) {
 
   /* Save the incoming parameters */
   this->mSock = mSock;
-
 }
 
 

@@ -29,9 +29,11 @@ OAServer::~OAServer(void) {
 /****************************************/
 int OAServer::PrintHandlerThread(void) {
 /****************************************/
+  cout << endl;
   for(std::list< boost::shared_ptr<HandlerThread> >::const_iterator cIter = lpHandler.begin(); cIter != lpHandler.end(); cIter++) {
     cout << (*cIter)->GetThreadPriority() << endl;
   }
+  cout << endl;
 
   return(0);
 }
