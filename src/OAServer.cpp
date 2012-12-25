@@ -12,7 +12,7 @@ OAServer::OAServer(unsigned int mPortNum, char *mDbName, unsigned int mNumThread
 
   SetNumThreads(mNumThreads);
   for(int i = 0; i < mNumThreads; i++) {
-    lpHandler.push_back(boost::shared_ptr<HandlerThread>(new HandlerThread(i)));
+    lpHandler.push_back(boost::shared_ptr<HandlerThread>(new HandlerThread()));
   }
 }
 
@@ -109,6 +109,7 @@ int OAServer::PollMasterSocket(void) {
   int mFd = pSock->GetSocketFd();
   Socket_t mSock;
   fd_set mReadFds;
+  struct timeval tv = {1, 0};
 
   /* Reset the select variables */
   FD_ZERO(&mReadFds);
@@ -116,7 +117,7 @@ int OAServer::PollMasterSocket(void) {
 
   /* TODO - This needs to have a timeout period so other operations
      on the main thread can occur.  Thread prioritization, housekeeping, etc */
-  if((select(mFd + 1, &mReadFds , NULL , NULL , NULL) < 0) && (errno != EINTR)) {
+  if((select(mFd + 1, &mReadFds, NULL, NULL, &tv) < 0) && (errno != EINTR)) {
     printf("ERR:  OAServer master socket selection error\n");
   }
 
@@ -133,9 +134,8 @@ int OAServer::PollMasterSocket(void) {
 
     /* Inform the user of new incoming socket number */
     printf("INFO: New connection(%d) %s:%d\n" , mSock.fd, inet_ntoa(mSock.mAddr.sin_addr) , ntohs(mSock.mAddr.sin_port));
-    printf("INFO:   Adding socket %d to thread %d\n", mSock.fd, (*cIter)->GetThreadID());
+    printf("INFO:   Adding socket %d to thread %d\n", mSock.fd, (*cIter)->GetThreadPID());
   }
-
 
   return(0);
 }

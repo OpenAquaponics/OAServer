@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include <list>
 #include <vector>
@@ -44,7 +45,6 @@ class HandlerThread : public EthernetList {
     void Init(void);
 
   public:
-    HandlerThread(int mID);
     HandlerThread(void);
    ~HandlerThread(void);
 
@@ -52,18 +52,20 @@ class HandlerThread : public EthernetList {
       return mThreadPriority < rhs.mThreadPriority;
     }
 
-    int GetThreadID(void) { return(mThreadId); };
+    int GetThreadPID(void) { return(mThreadPID); };
     int GetThreadPriority(void) { return(mThreadPriority); };
 
     int AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock);
     virtual int ProcessData(Ethernet *pSock);
 
   protected:
-    int SetThreadID(int mId) { this->mThreadId = mId; };
+    static void* Run(void *pParam);
+
     int SetThreadPriority(int p) { this->mThreadPriority = p; };
 
   private:
-    int mThreadId;
+    pthread_t thread;
+    int mThreadPID;
     int mThreadPriority;
 
 };
