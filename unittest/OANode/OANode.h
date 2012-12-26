@@ -27,40 +27,62 @@
 
 
 /* typedef */
+typedef struct {
+  void* pVariable;
+  char  sParamName[32];
+  char  sDfltValue[32];
+  Json::ValueType eType;
+  bool  bRequired;
+} json_param_t;
+
 
 /* namespace */
 
 /* global const */
 
-const std::string sRootName = "OANodeCfg";
-const std::string sOANodeCfgReqParam[] = {"mAcctHash", "mSystemId", "mDeviceId", "mOAServerIp", "mOAServerPort"};
-
 
 /* class */
 class OANodeCfg {
+
+  private:
+    void Init(void);
 
   public:
     OANodeCfg(std::string sFilename);
    ~OANodeCfg(void);
 
-    int LoadJSONFile(std::string sFilename);
+    int  LoadJSONFile(std::string sFilename);
+    void PrintJSONFile(void) { std::cout << root.toStyledString(); };
 
   protected:
-    void SetSystemId(int id) { this->mSystemId = id; };
-    void SetDeviceId(int id) { this->mDeviceId = id; };
-    void SetOAServerIp(std::string s) { this->sOAServerIp = s; };
-    void SetOAServerPort(int p) { this->mOAServerPort = p; };
+    int  LoadParams(void);
 
-    int GetSystemId(void) { return(mSystemId); };
-    int GetDeviceId(void) { return(mDeviceId); };
-    std::string GetOAServerIp(void) { return(sOAServerIp); };
-    int GetOAServerPort(void) { return(mOAServerPort); };
+    void SetSystemId(unsigned int id) { this->mSystemId = id; };
+    void SetDeviceId(unsigned int id) { this->mDeviceId = id; };
+    void SetOAServerIp(std::string s) { this->sOAServerIp = s; };
+    void SetOAServerPort(unsigned int p) { this->mOAServerPort = p; };
+
+    unsigned int GetSystemId(void) { return(mSystemId); };
+    unsigned int GetDeviceId(void) { return(mDeviceId); };
+    std::string  GetOAServerIp(void) { return(sOAServerIp); };
+    unsigned int GetOAServerPort(void) { return(mOAServerPort); };
 
   private:
-    int mSystemId;
-    int mDeviceId;
-    std::string sOAServerIp;
-    int mOAServerPort;
+    std::string  sAcctHash;
+    unsigned int mSystemId;
+    unsigned int mDeviceId;
+    std::string  sOAServerIp;
+    unsigned int mOAServerPort;
+
+    std::string  sName;
+    unsigned int mSampleTimeSecs;
+    std::string  sDescription;
+    bool bSaveFile;
+
+  private: 
+    Json::Value root;
+    std::string sRootName;
+    std::vector<json_param_t> vsParams;
 
 };
 

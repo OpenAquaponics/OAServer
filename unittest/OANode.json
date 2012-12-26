@@ -1,12 +1,12 @@
 {
     "OANodeCfg" : {
         "mAcctHash"         : "SOME ACCT HASH",
-        "mSystemId"         : "0x1SDF5345DS0G",
-        "mDeviceId"         : "0x23DFTWV34GDG",
+        "mSystemId"         : "1",
+        "mDeviceId"         : "123",
         "sName"             : "Node in the upper growbed",
         "mSampleTimeSecs"   : "5",
         "sDescription"      : "This unit is the initial system",
-        "mOAServerIp"       : "127.0.0.1",  // www.mynode.openaquaponics.org
+        "sOAServerIp"       : "127.0.0.1",  // www.mynode.openaquaponics.org
         "mOAServerPort"     : "50000",
         "mSaveFile"         : "1"
     },
