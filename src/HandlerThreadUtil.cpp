@@ -23,6 +23,11 @@ int HandlerThread::ProcessPacket(unsigned char *pData) {
 /****************************************/
   PacketHeader_t *pHdr = (PacketHeader_t*)pData;
 
+  /* Sanity check */
+  if(!pData) {
+    return(-1);
+  }
+
   //strftime('%s','2004-01-01 02:34:57')
   /* The brackets are needed to stop a 'crosses initialization' error for the pointers */
   switch(pHdr->mMsgType) {

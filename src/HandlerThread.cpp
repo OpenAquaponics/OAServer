@@ -107,15 +107,18 @@ int HandlerThread::ProcessData(Ethernet *pSock) {
         memcpy(pData, &mPktHdr, sizeof(mPktHdr));
         if((mRetVal = read(s, (void*)&pData[sizeof(mPktHdr)], mPktHdr.mNumBytes)) != mPktHdr.mNumBytes) {
           printf("ERR:  Error reading socket data\n");
-          if(pData) free(pData);
+        }
+        else {
+          ProcessPacket(pData);
         }
       }
     }
   }
 
-  ProcessPacket(pData);
-
+  /* Make sure memory is cleared */
   if(pData) free(pData);
+
+
 }
 
 

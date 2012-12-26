@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#define CLIENT_CNT  (10)
+#define CLIENT_CNT  (30)
 
 /****************************************/
 int main(int argc, char **argv) {
