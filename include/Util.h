@@ -26,7 +26,7 @@ class Util {
    ~Util(void);
 
     /* Make this a template so any data type can be used */
-    unsigned short ComputeChecksum(unsigned short *pBuff, int mNumBytes);
+    int ComputeChecksum(int *pBuff, int mNumBytes);
 
 #if 0
     template <class A>

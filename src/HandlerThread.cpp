@@ -72,51 +72,42 @@ int HandlerThread::ProcessData(Ethernet *pSock) {
 /****************************************/
   /* Variable Declaration */
   int mRetVal = 0;
-  int s = pSock->GetSocketFd();
-  PacketHeader_t mPktHdr;
-  unsigned char *pData = NULL;
+  static PacketHeader_t mHdr;
+  static unsigned char mBuff[1024];
+  unsigned char *pData = mBuff;
 
-
-#if 0
-  /* Check the make sure the stream is not closed */
-  if((mRetVal = recv(s, buff, 1, MSG_PEEK)) == 0) {
+  /* Check if the client disconnected */
+  if((mRetVal = pSock->Peek()) == 0) {
     /* Somebody disconnected, get details and close */
-    printf("INFO: Host disconnecting socket: %d\n", s);
-    RemoveSocket(s);
+    printf("INFO: Host disconnecting socket: %d\n", pSock->GetSocketFd());
+    RemoveSocket(pSock->GetSocketFd());
   }
-  /* Process the incoming data */
-  else if(mRetVal == 1) {
-    mRetVal = read(s, buff, sizeof(buff));
-    printf("Processing data from %d: %d bytes\n", s, mRetVal);
-  }
-#endif
+  /* There is data on the socket, so process it */
+  else if((mRetVal = pSock->Recv((unsigned char*)&mHdr, sizeof(mHdr))) == sizeof(mHdr)) {
+    /* Determine if more memory is needed */
+    if((sizeof(mHdr) + mHdr.mNumBytes) > sizeof(mBuff)) {
+      pData = (unsigned char*)malloc(sizeof(mHdr) + mHdr.mNumBytes);
+    }
 
-
-  /* TODO - Need to figure out how to get the Recv/Xmit socket stuff properly encapulated */
-  /* Check the make sure the stream is not closed */
-  if((mRetVal = recv(s, NULL, sizeof(mPktHdr), MSG_PEEK)) == 0) {
-    /* Somebody disconnected, get details and close */
-    printf("INFO: Host disconnecting socket: %d\n", s);
-    RemoveSocket(s);
-  }
-  /* Process the incoming data (verifies size before continuing) */
-  else if((mRetVal == sizeof(mPktHdr)) && 
-          ((mRetVal = recv(s, NULL, sizeof(mPktHdr) + mPktHdr.mNumBytes, MSG_PEEK)) >= sizeof(mPktHdr) + mPktHdr.mNumBytes)) {
-    if((mRetVal = read(s, &mPktHdr, sizeof(mPktHdr))) == sizeof(mPktHdr)) {
-      if((pData = (unsigned char*)malloc(sizeof(mPktHdr) + mPktHdr.mNumBytes)) != NULL) {
-        memcpy(pData, &mPktHdr, sizeof(mPktHdr));
-        if((mRetVal = read(s, (void*)&pData[sizeof(mPktHdr)], mPktHdr.mNumBytes)) != mPktHdr.mNumBytes) {
-          printf("ERR:  Error reading socket data\n");
-        }
-        else {
-          ProcessPacket(pData);
-        }
+    /* If the buffer pointer is valid, then read away */
+    if(pData) {
+      memcpy(pData, &mHdr, sizeof(mHdr));
+      if((mRetVal = pSock->Recv((unsigned char*)&pData[sizeof(mHdr)], mHdr.mNumBytes)) != mHdr.mNumBytes) {
+        printf("ERR:  Error reading socket data (%d of %d)\n", mRetVal, mHdr.mNumBytes);
+      }
+      else {
+        ProcessPacket(pData);
       }
     }
   }
+  else {
+    printf("ERR: Read %d bytes of %d\n", mRetVal, sizeof(mHdr));
+  }
 
-  /* Make sure memory is cleared */
-  if(pData) free(pData);
+  /* Free memory if it was allocated */
+  if((pData != mBuff) && (pData)) {
+    free(pData);
+  }
 
 
 }

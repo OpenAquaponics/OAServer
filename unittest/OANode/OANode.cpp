@@ -1,37 +1,11 @@
 
 #include "OANode.h"
 
-#if 0
-#include <list>
-#include "Ethernet.h"
-
-using namespace std;
-
-#define CLIENT_CNT  (30)
 
 /****************************************/
-int main(int argc, char **argv) {
+void OANode::Init(void) {
 /****************************************/
-  /* Variable Declaration */
-  std::list< boost::shared_ptr<Ethernet> > lpClients;
-
-  printf("INFO: Spawning the client sockets\n");
-  for(int i = 0; i < CLIENT_CNT; i++) {
-    lpClients.push_back(boost::shared_ptr<Ethernet>(new Ethernet(SOCKET_TYPE_TCP_CLIENT, (char*)"127.0.0.1", 50000)));
-  }
-
-  lpClients.erase(lpClients.begin(), lpClients.end());
-
-  /* Have the sockets send a bunch of data */
-
-  return(0);
-}
-#endif
-
-
-/****************************************/
-void Init(void) {
-/****************************************/
+  srand(time(NULL));
 }
 
 
@@ -66,7 +40,26 @@ int OANode::Run(void) {
 /****************************************/
 int OANode::Debug(void) {
 /****************************************/
+  /* Variable Declaration */
+  int mNumBytes = 0;
+  char *pBuff = NULL;
+  PacketHeader_t mHdr;
 
+  /* Randomly decide if something should be transmitted */
+  if(rand() % 2) {
+    mNumBytes = rand() % 2048;
+    if((pBuff = (char*)malloc(mNumBytes)) != NULL) {
+      mHdr.mSync     = SYNC;
+      mHdr.mNumBytes = mNumBytes;
+      mHdr.mChecksum = ComputeChecksum((int*)pBuff, mHdr.mNumBytes);
+
+      pSock->Send((unsigned char*)&mHdr, sizeof(mHdr));
+      pSock->Send((unsigned char*)pBuff, mHdr.mNumBytes);
+    }
+
+    if(pBuff) free(pBuff);
+    pBuff = NULL;
+  }
 
   return(0);
 }

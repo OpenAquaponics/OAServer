@@ -95,7 +95,7 @@ Ethernet::~Ethernet(void) {
 
 
 /****************************************/
-int Ethernet::XmitData(unsigned char *mBuff, int mNumBytes) {
+int Ethernet::Send(unsigned char *mBuff, int mNumBytes) {
 /****************************************/
   /* Variable Declaration */
   int mXmitBytes = 0;
@@ -103,22 +103,25 @@ int Ethernet::XmitData(unsigned char *mBuff, int mNumBytes) {
   if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
     /* Send the data over the socket */
     if((mXmitBytes = sendto(mSock.fd, mBuff, mNumBytes, 0, (struct sockaddr *)&mSock.mAddr, (int)mSock.mAddrLen)) < 0) {
-      printf("ERR:  Failed to xmit socket data: %d of %d  (%d)\n", mXmitBytes, mNumBytes, errno);
-      mSock.mConnected = FALSE;
+      printf("ERR:  Failed to xmit socket data: %d of %d  (%s)\n", mXmitBytes, mNumBytes, strerror(errno));
       return(-1);
     }
   }
-  if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::XmitData(&mSockAcc, mBuff, mNumBytes));
-#endif
+  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
+    /* Send the data over the socket */
+    if((mXmitBytes = send(mSock.fd, mBuff, mNumBytes, 0)) < 0) {
+      printf("ERR:  Failed to xmit socket data: %d of %d  (%s)\n", mXmitBytes, mNumBytes, strerror(errno));
+      mSock.mConnected = FALSE;
+      return(-1);
+    }
   }
 
   return(mXmitBytes);
 }
 
+
 /****************************************/
-int Ethernet::RecvData(unsigned char *mBuff, int mNumBytes) {
+int Ethernet::Recv(unsigned char *mBuff, int mNumBytes) {
 /****************************************/
   /* Variable Declaration */
   int i = 0;
@@ -128,18 +131,57 @@ int Ethernet::RecvData(unsigned char *mBuff, int mNumBytes) {
   if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
     for(i = 0, mRecvBytes = 0; (mRecvBytes < mNumBytes) && (i < MAX_TCP_READS); mRecvBytes += mRetVal, i++) {
       if((mRetVal = recvfrom(mSock.fd, &mBuff[mRecvBytes], (mNumBytes - mRecvBytes), 0, (struct sockaddr *)&mSock.mAddr, (socklen_t*)&mSock.mAddrLen)) < 0) {
-        printf("ERR:  Failed to recieve socket data: %d of %d\n", mRecvBytes, mNumBytes);
+        printf("ERR:  Failed to recieve socket data: %d of %d  (%s)\n", mRecvBytes, mNumBytes, strerror(errno));
         return(-1);
       }
     }
-
   }
-  if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
-#if 0
-    return(::RecvData(&mSockAcc, mBuff, mNumBytes));
-#endif
+  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
+    for(i = 0, mRecvBytes = 0; (mRecvBytes < mNumBytes) && (i < MAX_TCP_READS); mRecvBytes += mRetVal, i++) {
+      if((mRetVal = recv(mSock.fd, &mBuff[mRecvBytes], (mNumBytes - mRecvBytes), 0)) < 0) {
+        printf("ERR:  Failed to recieve socket data: %d of %d  (%s)\n", mRecvBytes, mNumBytes, strerror(errno));
+        mSock.mConnected = FALSE;
+        return(-1);
+      }
+    }
   }
 
   return(mRecvBytes);
 }
+
+
+/****************************************/
+int Ethernet::Peek(int mNumBytes) {
+/****************************************/
+  char *pData = (char*)malloc(mNumBytes);
+
+  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
+    return(-1);
+  }
+  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
+    return(recv(mSock.fd, pData, mNumBytes, MSG_PEEK));
+  }
+
+  return(-1);
+}
+
+
+/****************************************/
+int Ethernet::Peek(void) {
+/****************************************/
+  char pBuff;
+
+  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
+    return(-1);
+  }
+  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
+    return(recv(mSock.fd, &pBuff, sizeof(pBuff), MSG_PEEK));
+  }
+
+  return(-1);
+}
+
+
+
+
 

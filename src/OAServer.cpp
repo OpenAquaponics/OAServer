@@ -82,8 +82,7 @@ int OAServer::PollMasterSocket(void) {
     (*cIter)->AddSocket(SOCKET_TYPE_TCP_SERVER, mSock);
 
     /* Inform the user of new incoming socket number */
-    printf("INFO: New connection(%d) %s:%d\n" , mSock.fd, inet_ntoa(mSock.mAddr.sin_addr) , ntohs(mSock.mAddr.sin_port));
-    printf("INFO:   Adding socket %d to thread %u\n", mSock.fd, (*cIter)->GetThreadPID());
+    printf("INFO: New connection(%d) %s:%d added to thread %u\n" , mSock.fd, inet_ntoa(mSock.mAddr.sin_addr) , ntohs(mSock.mAddr.sin_port), (*cIter)->GetThreadPID());
   }
 
   return(0);

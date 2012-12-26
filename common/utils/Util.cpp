@@ -28,15 +28,15 @@ Util::~Util(void) {
 
 
 /****************************************/
-unsigned short ComputeChecksum(unsigned short *pBuff, int mNumBytes) {
+int Util::ComputeChecksum(int *pBuff, int mNumBytes) {
 /****************************************/
-  unsigned short mChksum = 0;
+  int mChksum = 0;
 
-  for( ; mNumBytes > 1; mNumBytes -= sizeof(*pBuff)) {
+  for( ; mNumBytes > 4; mNumBytes -= sizeof(*pBuff)) {
     mChksum += *pBuff++;
   }
-  if(mNumBytes) {
-    mChksum += *(unsigned char*)pBuff;
+  for( ; mNumBytes > 0; mNumBytes--) {
+    mChksum += *(char*)pBuff++;
   }
 
   return(mChksum);

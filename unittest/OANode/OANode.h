@@ -5,6 +5,9 @@
 #define _OANODE_H_
 
 /* system includes */
+#include "stdlib.h"
+#include "time.h"
+
 #include <list>
 
 /* user includes */
@@ -23,9 +26,10 @@
 /* namespace */
 
 /* class */
-class OANode {
+class OANode : public Util {
 
   private:
+    void Init(void);
 
   public:
     OANode(char *sIpAddr = "127.0.0.1", unsigned int mPortNum = 50000, char *sDbName = "./OANode.sqlite", unsigned int mNumThreads = 2);
