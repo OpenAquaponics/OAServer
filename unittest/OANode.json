@@ -1,6 +1,6 @@
 {
-    "OANodeCfg" {
-        "mAccHash"          : "SOME ACCT HASH"
+    "OANodeCfg" : {
+        "mAcctHash"         : "SOME ACCT HASH",
         "mSystemId"         : "0x1SDF5345DS0G",
         "mDeviceId"         : "0x23DFTWV34GDG",
         "sName"             : "Node in the upper growbed",
@@ -8,17 +8,17 @@
         "sDescription"      : "This unit is the initial system",
         "mOAServerIp"       : "127.0.0.1",  // www.mynode.openaquaponics.org
         "mOAServerPort"     : "50000",
-        "mSaveFile"         : "1",
+        "mSaveFile"         : "1"
     },
     
-    "OASensor" [
+    "OASensor" : [
         {
             "sDescription"  : "Outdoor temperature sensor",
             "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "F",
             "mPin"          : "10",
             // How would you put conversion information in here??
-            "OATask" [
+            "OATask" : [
                 {
                     "mTaskType"     : "SMS", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
                     "mNumSamples"   : "20",
@@ -38,28 +38,28 @@
                     "mPhoneNumber"  : "2561234567",
                     "mMessage"      : "Boy it's hot out here",
                     "mTimeout"      : "WEEK" // "HOUR", "DAY", "WEEK", "MONTH"
-                },
+                }
             ]
         },
         {
             "sDescription"  : "Outdoor humidity sensor",
             "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "%",
-            "mPin"          : "13",
+            "mPin"          : "13"
         },
         {
             "sDescription"  : "Water level sensor",
             "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "mm",
             "mPin"          : "17",
-            "OATask" [
+            "OATask" : [
                 {
                     "mTaskType"     : "ON", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
                     "mNumSamples"   : "3",
                     "mValue"        : "100",
                     "mDescription"  : "Turn ON pump when water level drops too low",
                     // Based on mEventType
-                    "mPin"          : "16",
+                    "mPin"          : "16"
                 },
                 {
                     "mTaskType"     : "OFF", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
@@ -67,24 +67,26 @@
                     "mValue"        : "50",
                     "mDescription"  : "Turn OFF pump when water level drops too low",
                     // Based on mEventType
-                    "mPin"          : "16",
-                },
-            ],
+                    "mPin"          : "16"
+                }
+            ]
         },
         {
             "sDescription"  : "Water Pump",
             "mType"         : "DO", // AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "",
             "mPin"          : "16",
-            "mDefaultVal"   : "1",
-        },
-    ],
+            "mDefaultVal"   : "1"
+        }
+    ]
     
-    "OATaskAdvanced" [
-        // Add complex monitoring definitions here
-    ],
+//    "OATaskAdvanced" : [
+//        // Add complex monitoring definitions here
+//    ]
+
 }
 
+/* 
 
 //OASample
 {
@@ -126,3 +128,5 @@ class SensorAI , public Sensor {
 class SensorDI , public Sensor {
     pin
 }
+
+*/

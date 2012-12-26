@@ -14,12 +14,12 @@ include ${ROOT_SRC_PATH}/root_make.rules
 LIB_NAME = "Unit Test OAServer"
 
 # Include and library paths
-ALL_INCL_PATHS  = -I${ROOT_INCL_PATH} -I ./OANode
+ALL_INCL_PATHS  = -I${ROOT_INCL_PATH} -I./OANode
 ALL_LIB_PATHS   = -L${ROOT_LIB_PATH}
 
 # Include and library files
 ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
-ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} ${LIB_UTIL} -lpthread
+ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} ${LIB_UTIL} ${LIB_JSON} -lpthread
 
 # Files to be compiled by the makefile
 SRCS = unittest.cpp ./OANode/OANode.cpp
