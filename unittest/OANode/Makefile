@@ -19,10 +19,10 @@ ALL_LIB_PATHS   = -L${ROOT_LIB_PATH}
 
 # Include and library files
 ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
-ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} -lpthread
+ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} ${LIB_UTIL} ${LIB_JSON} -lpthread
 
 # Files to be compiled by the makefile
-SRCS = OANode.cpp Application.cpp
+SRCS = OASensor.cpp OANodeCfg.cpp OANode.cpp Application.cpp
 OBJS = ${SRCS:.cpp=.o}
 
 # Main build target

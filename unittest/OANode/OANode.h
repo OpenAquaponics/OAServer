@@ -5,15 +5,20 @@
 #define _OANODE_H_
 
 /* system includes */
-#include "stdlib.h"
-#include "time.h"
-
+#include <stdlib.h>
+#include <time.h>
+#include <iostream>
+#include <fstream>
 #include <list>
+#include <vector>
 
 /* user includes */
 #include "Ethernet.h"
 #include "Database.h"
+#include "OASensor.h"
 #include "Util.h"
+
+#include "json/json.h"
 
 /* defines */
 
@@ -25,7 +30,41 @@
 
 /* namespace */
 
+/* global const */
+
+const std::string sRootName = "OANodeCfg";
+const std::string sOANodeCfgReqParam[] = {"mAcctHash", "mSystemId", "mDeviceId", "mOAServerIp", "mOAServerPort"};
+
+
 /* class */
+class OANodeCfg {
+
+  public:
+    OANodeCfg(std::string sFilename);
+   ~OANodeCfg(void);
+
+    int LoadJSONFile(std::string sFilename);
+
+  protected:
+    void SetSystemId(int id) { this->mSystemId = id; };
+    void SetDeviceId(int id) { this->mDeviceId = id; };
+    void SetOAServerIp(std::string s) { this->sOAServerIp = s; };
+    void SetOAServerPort(int p) { this->mOAServerPort = p; };
+
+    int GetSystemId(void) { return(mSystemId); };
+    int GetDeviceId(void) { return(mDeviceId); };
+    std::string GetOAServerIp(void) { return(sOAServerIp); };
+    int GetOAServerPort(void) { return(mOAServerPort); };
+
+  private:
+    int mSystemId;
+    int mDeviceId;
+    std::string sOAServerIp;
+    int mOAServerPort;
+
+};
+
+
 class OANode : public Util {
 
   private:
@@ -35,13 +74,14 @@ class OANode : public Util {
     OANode(char *sIpAddr = "127.0.0.1", unsigned int mPortNum = 50000, char *sDbName = "./OANode.sqlite", unsigned int mNumThreads = 2);
    ~OANode(void);
 
+
     int Run(void);
 
     /* GET/SET */
-    int SetVerbose(int v) { this->mVerbose = v; };
-    int GetVerbose(void)  { return(this->mVerbose); };
-    int SetNumThreads(unsigned int t) { this->mNumThreads = t; };
-    int GetNumthreads(void)  { return(this->mNumThreads); };
+    void SetVerbose(int v) { this->mVerbose = v; };
+    void SetNumThreads(unsigned int t) { this->mNumThreads = t; };
+    int  GetVerbose(void)  { return(this->mVerbose); };
+    int  GetNumthreads(void)  { return(this->mNumThreads); };
 
 
     int Debug(void);
@@ -49,8 +89,9 @@ class OANode : public Util {
   protected:
 
   private:
-    Ethernet *pSock;
-    Database *pDb;
+    OANodeCfg *pOANodeCfg;
+    Ethernet  *pSock;
+    Database  *pDb;
 
     int mVerbose;
     int mNumThreads; 

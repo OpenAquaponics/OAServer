@@ -1,11 +1,17 @@
+/*****************************************************/
+/* Author : Joshua Eliser */
+/*****************************************************/
 
+/* user includes */
 #include "OANode.h"
 
+using namespace std;
 
 /****************************************/
 void OANode::Init(void) {
 /****************************************/
   srand(time(NULL));
+
 }
 
 
@@ -13,6 +19,8 @@ void OANode::Init(void) {
 OANode::OANode(char *sIpAddr, unsigned int mPortNum, char *sDbName, unsigned int mNumThreads) {
 /****************************************/
   Init();
+
+  pOANodeCfg = new OANodeCfg(std::string("../OANode.json"));
 
   SetNumThreads(mNumThreads);
   pSock = new Ethernet(SOCKET_TYPE_TCP_CLIENT, sIpAddr, mPortNum);
@@ -31,7 +39,6 @@ OANode::~OANode(void) {
 /****************************************/
 int OANode::Run(void) {
 /****************************************/
-
 
   return(0);
 }
