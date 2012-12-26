@@ -12,6 +12,8 @@
 #include <list>
 #include <vector>
 
+#include <boost/lexical_cast.hpp>
+
 /* user includes */
 #include "Ethernet.h"
 #include "Database.h"
@@ -53,9 +55,7 @@ class OANodeCfg {
 
     int  LoadJSONFile(std::string sFilename);
     void PrintJSONFile(void) { std::cout << root.toStyledString(); };
-
-//    int  PollSensors(void);
-//    std::string BuildJSONMessage(void);
+    int  Step(void);
 
   protected:
     int  LoadParams(void);
@@ -90,7 +90,7 @@ class OANodeCfg {
     std::string sRootNameSensor;
 
     std::vector<JSON_PARAM_t> vsParams;
-    std::vector<OASensor*> vOASensor;
+    std::vector<OASensor*> vpOASensor;
 
 };
 
@@ -117,6 +117,8 @@ class OANode : public Util {
     int Debug(void);
 
   protected:
+    int Step(void) { if(pOANodeCfg) pOANodeCfg->Step(); };
+//    std::string BuildJSONMessage(int mType);
 
   private:
     OANodeCfg *pOANodeCfg;

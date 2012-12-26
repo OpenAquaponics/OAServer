@@ -11,7 +11,9 @@ int OANodeMain(void) {
   /* Variable Declaration */
   OANode mOANode((char*)"127.0.0.1", 50000, (char*)"", 2);
 
-  mOANode.Debug();
+  for(int i = 0; i < 10; i++) {
+    mOANode.Debug();
+  }
 
   return(0);
 }

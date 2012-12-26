@@ -125,13 +125,16 @@ int OANodeCfg::LoadSensors(void) {
       if(!mArray[i].isMember("mType")) {
         cout << "ERR:  OASensor mssing required parameter: mType\n";
       }
+      else if(i >= MAX_NUM_OASENSOR) {
+        cout << "ERR:  OASensor reached max sensor list size: " << MAX_NUM_OASENSOR << ". Uanble to add: " << mArray[i].get("sName", "").asString() << endl;
+      }
       else {
         switch(mType = atoi(mArray[i].get("mType", "").asString().c_str())) {
           case OASENSOR_AI:
             {
-            vOASensor.push_back(new SensorAI(
+            vpOASensor.push_back(new SensorAI(
               mArray[i].get("sName", "").asString(),
-              (unsigned int)atoi(mArray[i].get("mType", "").asString().c_str()),
+              mType,
               (unsigned int)atoi(mArray[i].get("mPin", "").asString().c_str()),
               mArray[i].get("sUnits", "").asString(),
               mArray[i].get("sDescription", "").asString()
@@ -139,9 +142,9 @@ int OANodeCfg::LoadSensors(void) {
             }
             break;
           case OASENSOR_DO:
-            vOASensor.push_back(new SensorDO(
+            vpOASensor.push_back(new SensorDO(
               mArray[i].get("sName", "").asString(),
-              (unsigned int)atoi(mArray[i].get("mType", "").asString().c_str()),
+              mType,
               (unsigned int)atoi(mArray[i].get("mPin", "").asString().c_str()),
               mArray[i].get("sUnits", "").asString(),
               mArray[i].get("sDescription", "").asString()
@@ -152,10 +155,49 @@ int OANodeCfg::LoadSensors(void) {
             break;
         }
 
-        cout << "INFO:   Extracted " << vOASensor[i]->GetName() << " : " << vOASensor[i]->GetDescription() << endl;
+        cout << "INFO:   Extracted " << vpOASensor[i]->GetName() << " : " << vpOASensor[i]->GetDescription() << endl;
       }
     }
   }
 
 }
+
+
+/****************************************/
+int OANodeCfg::Step(void) {
+/****************************************/
+  /* Variable Declaration */
+  string sJsonDb = "{OASensor:[";
+
+  /* Poll all of the sensors */
+  for(int i = 0; i < vpOASensor.size(); i++) {
+    if(i) { sJsonDb.append(","); }
+
+    switch(vpOASensor[i]->GetType()) {
+      case OASENSOR_AI:
+/* Can this be 2 significant digits?? */
+        sJsonDb.append(boost::lexical_cast<std::string>(((SensorAI*)vpOASensor[i])->ProcessSensor()));
+        break;
+      case OASENSOR_DO:
+        sJsonDb.append(boost::lexical_cast<std::string>(((SensorDO*)vpOASensor[i])->ProcessSensor()));
+        break;
+      default:
+        {
+        static int print = vpOASensor.size();
+        if(print) {
+          cout << "INFO: OANodeCfg->Step() unhandled sensor type: " << vpOASensor[i]->GetType() << endl;
+          print--;
+        }
+        }
+    }
+  }
+
+  sJsonDb.append("] }");
+
+  cout << sJsonDb << endl;
+
+  return(0);
+}
+
+
 

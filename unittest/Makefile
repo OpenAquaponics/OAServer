@@ -22,7 +22,7 @@ ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
 ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} ${LIB_UTIL} ${LIB_JSON} -lpthread
 
 # Files to be compiled by the makefile
-SRCS = unittest.cpp ./OANode/OANode.cpp ./OANode/OANodeCfg.cpp
+SRCS = unittest.cpp ./OANode/OANode.cpp ./OANode/OANodeCfg.cpp ./OANode/OASensor.cpp
 OBJS = ${SRCS:.cpp=.o}
 
 # Main build target

@@ -55,6 +55,8 @@ int OANode::Debug(void) {
   /* TODO - There should a debug that exercises off-nominals
       and then one that has valid data, but tons of it */
 
+  Step();
+
   /* Randomly decide if something should be transmitted */
   if(rand() % 2) {
     mNumBytes = rand() % 2048;

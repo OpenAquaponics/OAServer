@@ -6,12 +6,13 @@
 
 /* system includes */
 #include <iostream>
+#include <stdlib.h>
 
 /* user includes */
 
 
 /* defines */
-
+#define MAX_NUM_OASENSOR    (16)  /* Maximum number of columns in the database */
 
 /* enums */
 typedef enum {
@@ -53,7 +54,7 @@ class OASensor {
       SetDescription(sDescription);
     };
 
-    virtual int ProcessSensor(void) = 0;
+    virtual float ProcessSensor(void) = 0;
 
     void SetName(std::string s) { this->sName = s; };
     void SetType(unsigned int t) { this->mType = t; };
@@ -79,7 +80,7 @@ class SensorAI : public OASensor {
     SensorAI(std::string sName, unsigned int mType, unsigned int mPin, std::string sUnits, std::string sDescription);
    ~SensorAI(void);
 
-    virtual int ProcessSensor(void) { std::cout << OASensor::GetDescription() << std::endl; };
+    virtual float ProcessSensor(void);
 
     void SetPin(unsigned int p) { this->mPin = p; };
 
@@ -96,7 +97,7 @@ class SensorDO : public OASensor {
     SensorDO(std::string sName, unsigned int mType, unsigned int mPin, std::string sUnits, std::string sDescription);
    ~SensorDO(void);
 
-    virtual int ProcessSensor(void) { std::cout << OASensor::GetDescription() << std::endl; };
+    virtual float ProcessSensor(void) { return(-1.0); };
 
     void SetPin(unsigned int p) { this->mPin = p; };
 
