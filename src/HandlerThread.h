@@ -49,11 +49,12 @@ class HandlerThread : public EthernetList {
    ~HandlerThread(void);
 
     bool operator < (const HandlerThread& rhs) {
-      return mThreadPriority < rhs.mThreadPriority;
+      return GetThreadPriority() < rhs.mThreadPriority;
     }
 
-    int GetThreadPID(void) { return(mThreadPID); };
     int GetThreadPriority(void) { return(mThreadPriority); };
+    unsigned int GetThreadPID(void) { return(mThreadPID); };
+    int SetThreadPID(int p) { this->mThreadPID = p; };
 
     int AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock);
     virtual int ProcessData(Ethernet *pSock);
@@ -62,11 +63,12 @@ class HandlerThread : public EthernetList {
     static void* Run(void *pParam);
 
     int SetThreadPriority(int p) { this->mThreadPriority = p; };
+    int GenerateThreadPriority(void);
 
   private:
     pthread_t thread;
-    int mThreadPID;
     int mThreadPriority;
+    unsigned int mThreadPID;
 
 };
 

@@ -145,6 +145,7 @@ class EthernetList {
 
     int AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock);
     int RemoveSocket(int mFd);
+    int GetSocketListSize(void) { return(vpSockList.size()); };
     int PollSocketList(void);
 
     /* The Derived class must implement a ProcessData function */

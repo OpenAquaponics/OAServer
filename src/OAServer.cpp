@@ -31,7 +31,7 @@ int OAServer::PrintHandlerThread(void) {
 /****************************************/
   cout << endl;
   for(std::list< boost::shared_ptr<HandlerThread> >::const_iterator cIter = lpHandler.begin(); cIter != lpHandler.end(); cIter++) {
-    cout << (*cIter)->GetThreadPriority() << endl;
+    cout << (*cIter)->GetThreadPID() << "  " << (*cIter)->GetThreadPriority() << endl;
   }
   cout << endl;
 
@@ -129,12 +129,13 @@ int OAServer::PollMasterSocket(void) {
     }
 
     /* Add the incoming socket to the thread with the least utilization */
+    lpHandler.sort(SortSharedPtr<HandlerThread>);
     std::list< boost::shared_ptr<HandlerThread> >::const_iterator cIter = lpHandler.begin();
     (*cIter)->AddSocket(SOCKET_TYPE_TCP_SERVER, mSock);
 
     /* Inform the user of new incoming socket number */
     printf("INFO: New connection(%d) %s:%d\n" , mSock.fd, inet_ntoa(mSock.mAddr.sin_addr) , ntohs(mSock.mAddr.sin_port));
-    printf("INFO:   Adding socket %d to thread %d\n", mSock.fd, (*cIter)->GetThreadPID());
+    printf("INFO:   Adding socket %d to thread %u\n", mSock.fd, (*cIter)->GetThreadPID());
   }
 
   return(0);
