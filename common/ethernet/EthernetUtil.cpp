@@ -14,7 +14,7 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
   if(mSockType == SOCKET_TYPE_UDP_SERVER) {
     /* Open the socket file descriptor */
     if((mSock.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0 ) {
-      printf("ERR: Opening UDP server socket\n");
+      printf("ERR:  Opening UDP server socket\n");
       return(-1);
     }
 
@@ -27,7 +27,7 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
     
     /* Bind on the socket port */
     if((mRetVal = bind(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr))) < 0 ) {
-      printf("ERR: Binding on port %d\n", mPortNum);
+      printf("ERR:  Binding on port %d\n", mPortNum);
       CloseSocket();
       return(-1);
     }
@@ -36,7 +36,7 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
   else if(mSockType == SOCKET_TYPE_UDP_CLIENT) {
     /* Open the socket file descriptor */
     if((mSock.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0 ) {
-      printf("ERR: Opening UDP client socket\n");
+      printf("ERR:  Opening UDP client socket\n");
       return(-1);
     }
     
@@ -51,13 +51,13 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
   else if(mSockType == SOCKET_TYPE_TCP_SERVER) {
     /* Open the socket file descriptor */
     if((mSock.fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0 ) {
-      printf("ERR: Opening TCP server socket\n");
+      printf("ERR:  Opening TCP server socket\n");
       return(-1);
     }
 
     /* Set master socket to allow multiple connections */
     if(setsockopt(mSock.fd, SOL_SOCKET, SO_REUSEADDR, (char *)&mOpt, sizeof(mOpt)) < 0 ) {
-      printf("ERR: Configuring socket to reuseable\n");
+      printf("ERR:  Configuring socket to reuseable\n");
       CloseSocket();
       return(-1);
     }
@@ -71,14 +71,14 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
 
     /* Bind on the socket port */
     if((mRetVal = bind(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr))) < 0 ) {
-      printf("ERR: Binding on port %d\n", mPortNum);
+      printf("ERR:  Binding on port %d\n", mPortNum);
       CloseSocket();
       return(-1);
     }
 
     /* Listen on the port */
     if(listen(mSock.fd, NUM_LISTEN) < 0) {
-      printf("ERR: Listen on port %d\n", mPortNum);
+      printf("ERR:  Listen on port %d\n", mPortNum);
       CloseSocket();
       return(-1);
     }
@@ -87,7 +87,7 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
   else if(mSockType == SOCKET_TYPE_TCP_CLIENT) {
     /* Open the socket file descriptor */
     if((mSock.fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0 ) {
-      printf("ERR: Opening TCP client socket\n");
+      printf("ERR:  Opening TCP client socket\n");
       return(-1);
     }
     
@@ -101,14 +101,14 @@ int Ethernet::InitSocket(char *mIpAddr, unsigned int mPortNum) {
     mSock.mConnected = FALSE;
     /* Connect the socket */
     if(connect(mSock.fd, (struct sockaddr*)&mSock.mAddr, sizeof(mSock.mAddr)) < 0) {
-      printf("ERR: Connecting to remote TCP server\n");
+      printf("ERR:  Connecting to remote TCP server\n");
       CloseSocket();
       return(-1);
     }
     mSock.mConnected = TRUE;
   }
   else {
-    printf("ERR: Invalid socket type: %d\n", mSockType);
+    printf("ERR:  Invalid socket type: %d\n", mSockType);
     return(-1);
   }
 
@@ -129,7 +129,7 @@ int Ethernet::ConfigBlockingState(int mBlocking) {
   if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
     /* Set the socket to be non-mBlocking */
     if(IOCTL(mSock.fd, FIONBIO, &mBlocking) < 0) {
-      printf("ERR: Configuring socket to non-mBlocking  (%d)\n", mSock.fd);
+      printf("ERR:  Configuring socket to non-mBlocking  (%d)\n", mSock.fd);
       return(-1);
     }
   }
@@ -168,14 +168,14 @@ int Ethernet::ConfigRecvBuffSize(int mBuffSize) {
     
   /* Sent the buffer size */
   if(setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char*)&mBuffSize, mParamLen) < 0) {
-    printf("ERR: Configuring socket recv buffer size to %d\n", mBuffSize);
+    printf("ERR:  Configuring socket recv buffer size to %d\n", mBuffSize);
     return(-1);
   }
 
   /* Make sure the buffer was set to proper size */
   getsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char*)&mRetVal, (socklen_t*)&mParamLen);
   if(mRetVal != mBuffSize) {
-    printf("ERR: Configuring socket recv buffer size to %d, current size %d\n", mBuffSize, mRetVal);
+    printf("ERR:  Configuring socket recv buffer size to %d, current size %d\n", mBuffSize, mRetVal);
     return(-1);
   }
 
@@ -208,14 +208,14 @@ int Ethernet::ConfigXmitBuffSize(int mBuffSize) {
 
   /* Sent the buffer size */
   if(setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char*)&mBuffSize, mParamLen) < 0) {
-    printf("ERR: Configuring socket xmit buffer size to %d\n", mBuffSize);
+    printf("ERR:  Configuring socket xmit buffer size to %d\n", mBuffSize);
     return(-1);
   }
 
   /* Make sure the buffer was set to proper size */
   getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char*)&mRetVal, (socklen_t*)&mParamLen);
   if(mRetVal != mBuffSize) {
-    printf("ERR: Configuring socket xmit buffer size to %d, current size %d\n", mBuffSize, mRetVal);
+    printf("ERR:  Configuring socket xmit buffer size to %d, current size %d\n", mBuffSize, mRetVal);
     return(-1);
   }
 
@@ -248,14 +248,14 @@ int Ethernet::ConfigRecvTimeout(int msec) {
 
   /* Set the socket to have a timeout */
   if(setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&msec, mParamLen) < 0) {
-    printf("ERR: Configuring recv socket for timeout\n");
+    printf("ERR:  Configuring recv socket for timeout\n");
     return(-1);
   }
 
   /* Make sure the buffer was set to proper size */
   getsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&mRetVal, (socklen_t*)&mParamLen);
   if(mRetVal != msec) {
-    printf("ERR: Configuring socket recv timeout to %d, expected %d\n", mRetVal, msec);
+    printf("ERR:  Configuring socket recv timeout to %d, expected %d\n", mRetVal, msec);
     return(-1);
   }
 
@@ -288,14 +288,14 @@ int Ethernet::ConfigXmitTimeout(int msec) {
 
   /* Set the socket to have a timeout */
   if(setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&msec, mParamLen) < 0) {
-    printf("ERR: Configuring xmit socket for timeout\n");
+    printf("ERR:  Configuring xmit socket for timeout\n");
     return(-1);
   }
 
   /* Make sure the buffer was set to proper size */
   getsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char*)&mRetVal, (socklen_t*)&mParamLen);
   if(mRetVal != msec) {
-    printf("ERR: Configuring socket xmit timeout to %d, expected %d\n", mRetVal, msec);
+    printf("ERR:  Configuring socket xmit timeout to %d, expected %d\n", mRetVal, msec);
     return(-1);
   }
 

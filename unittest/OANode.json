@@ -8,19 +8,20 @@
         "sDescription"      : "This unit is the initial system",
         "sOAServerIp"       : "127.0.0.1",  // www.mynode.openaquaponics.org
         "mOAServerPort"     : "50000",
-        "mSaveFile"         : "1"
+        "bSaveFile"         : "1"
     },
     
     "OASensor" : [
         {
+            "sName"         : "OUT_TEMP_01",
             "sDescription"  : "Outdoor temperature sensor",
-            "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
+            "mType"         : "1", // INVALID, AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "F",
             "mPin"          : "10",
             // How would you put conversion information in here??
             "OATask" : [
                 {
-                    "mTaskType"     : "SMS", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mTaskType"     : "4", // "INVALID", "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
                     "mNumSamples"   : "20",
                     "mValue"        : "80",
                     "mDescription"  : "It's really hot outside.  Check on the fish and the plants.",
@@ -30,7 +31,7 @@
                     "mTimeout"      : "DAY" // "HOUR", "DAY", "WEEK", "MONTH"
                 },
                 {
-                    "mTaskType"     : "SMS", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mTaskType"     : "4", // "INVALID", "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
                     "mNumSamples"   : "20",
                     "mValue"        : "32",
                     "mDescription"  : "You might think about bringing the fish in",
@@ -42,19 +43,21 @@
             ]
         },
         {
+            "sName"         : "OUT_HUMID_01",
             "sDescription"  : "Outdoor humidity sensor",
-            "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
+            "mType"         : "1", // INVALID, AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "%",
             "mPin"          : "13"
         },
         {
+            "sName"         : "WATER_LVL_01",
             "sDescription"  : "Water level sensor",
-            "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
+            "mType"         : "1", // INVALID, AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "mm",
             "mPin"          : "17",
             "OATask" : [
                 {
-                    "mTaskType"     : "ON", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mTaskType"     : "1", // "INVALID", "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
                     "mNumSamples"   : "3",
                     "mValue"        : "100",
                     "mDescription"  : "Turn ON pump when water level drops too low",
@@ -62,7 +65,7 @@
                     "mPin"          : "16"
                 },
                 {
-                    "mTaskType"     : "OFF", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mTaskType"     : "2", // "INVALID", "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
                     "mNumSamples"   : "1",
                     "mValue"        : "50",
                     "mDescription"  : "Turn OFF pump when water level drops too low",
@@ -72,8 +75,9 @@
             ]
         },
         {
+            "sName"         : "WATER_PUMP_01",
             "sDescription"  : "Water Pump",
-            "mType"         : "DO", // AI, AO, DI, DO, SER, TCP, UDP
+            "mType"         : "4", // INVALID, AI, AO, DI, DO, SER, TCP, UDP
             "sUnits"        : "",
             "mPin"          : "16",
             "mDefaultVal"   : "1"

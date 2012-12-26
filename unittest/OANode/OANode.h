@@ -29,11 +29,11 @@
 /* typedef */
 typedef struct {
   void* pVariable;
-  char  sParamName[32];
-  char  sDfltValue[32];
+  std::string sParamName;
+  std::string  sDfltValue;
   Json::ValueType eType;
   bool  bRequired;
-} json_param_t;
+} JSON_PARAM_t;
 
 
 /* namespace */
@@ -54,8 +54,12 @@ class OANodeCfg {
     int  LoadJSONFile(std::string sFilename);
     void PrintJSONFile(void) { std::cout << root.toStyledString(); };
 
+//    int  PollSensors(void);
+//    std::string BuildJSONMessage(void);
+
   protected:
     int  LoadParams(void);
+    int  LoadSensors(void);
 
     void SetSystemId(unsigned int id) { this->mSystemId = id; };
     void SetDeviceId(unsigned int id) { this->mDeviceId = id; };
@@ -81,8 +85,12 @@ class OANodeCfg {
 
   private: 
     Json::Value root;
-    std::string sRootName;
-    std::vector<json_param_t> vsParams;
+
+    std::string sRootNameCfg;
+    std::string sRootNameSensor;
+
+    std::vector<JSON_PARAM_t> vsParams;
+    std::vector<OASensor*> vOASensor;
 
 };
 
