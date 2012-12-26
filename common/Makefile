@@ -15,22 +15,25 @@ PROJECT_NAME="COMMON"
 all: ${TARGETS}
 
 it_all:
-	@echo " "
-	@echo "   **** Execing Make it_all for the entire ${PROJECT_NAME} project ****"
-	@echo "          Making the entire ${PROJECT_NAME} project"
+	echo " "
+	echo "   **** Execing Make it_all for the entire ${PROJECT_NAME} project ****"
+	echo "          Making the entire ${PROJECT_NAME} project"
 	(cd ./ethernet;        make -s it_all)
 	(cd ./database;        make -s it_all)
+	(cd ./utils;           make -s it_all)
 
 clean:
-	@echo " "
-	@echo "   **** Execing Make clean for the entire ${PROJECT_NAME} project ****"
-	@echo "          Cleaning the entire ${PROJECT_NAME} project"
+	echo " "
+	echo "   **** Execing Make clean for the entire ${PROJECT_NAME} project ****"
+	echo "          Cleaning the entire ${PROJECT_NAME} project"
 	(cd ./ethernet;        make -s clean;      make -s clean_lib)
 	(cd ./database;        make -s clean;      make -s clean_lib)
+	(cd ./utils;           make -s clean;      make -s clean_lib)
 
 from_scratch:
-	@echo " "
-	@echo "   **** Execing Make from_scratch for the entire ${PROJECT_NAME} project ****"
-	@echo "          Building from scratch the entire ${PROJECT_NAME} project"
+	echo " "
+	echo "   **** Execing Make from_scratch for the entire ${PROJECT_NAME} project ****"
+	echo "          Building from scratch the entire ${PROJECT_NAME} project"
 	(cd ./ethernet;        make -s from_scratch)
 	(cd ./database;        make -s from_scratch)
+	(cd ./utils;           make -s from_scratch)

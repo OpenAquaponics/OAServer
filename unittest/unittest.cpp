@@ -1,6 +1,6 @@
 
 #include <list>
-#include "Ethernet.h"
+#include "OANode.h"
 
 using namespace std;
 
@@ -10,11 +10,11 @@ using namespace std;
 int main(int argc, char **argv) {
 /****************************************/
   /* Variable Declaration */
-  std::list< boost::shared_ptr<Ethernet> > lpClients;
+  std::list< boost::shared_ptr<OANode> > lpClients;
 
-  printf("INFO: Spawning the client sockets\n");
+  printf("INFO: Spawning the OANodes\n");
   for(int i = 0; i < CLIENT_CNT; i++) {
-    lpClients.push_back(boost::shared_ptr<Ethernet>(new Ethernet(SOCKET_TYPE_TCP_CLIENT, (char*)"127.0.0.1", 50000)));
+    lpClients.push_back(boost::shared_ptr<OANode>(new OANode((char*)"127.0.0.1", 50000, (char*)"", 2)));
   }
 
   lpClients.erase(lpClients.begin(), lpClients.end());
