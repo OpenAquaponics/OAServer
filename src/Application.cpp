@@ -86,23 +86,77 @@ int main(int argc, char *argv[]) {
 
 
 
-
-
-#if 0
-  int sock
-
 typedef struct {
-  socket_t 
-  void (*sockCallback) (socket_t *sock);
+  int mPortNum;
+  char sDbName[256];
+  int mNumThreads;
+} CommandLine_t;
 
+CommandLine_t mCmdLine;
+
+
+
+/****************************************/
+int PrintMenu(void) {
+/****************************************/
+  printf("Usage ./OAServer <--port 50000> <--db ./OAServer.sqlite> <--threads 10>\n");
+  printf("  --port <num>    : Port you would like the server to listen on\n");
+  printf("  --db <string>   : Name of the database to connect to\n");
+  printf("  --threads <num> : Number of handler threads you would like\n");
+  printf("  --help          : Print out this menu\n");
+  printf("\n");
+
+  return(0);
 }
-#endif
 
 
+/****************************************/
+int ParseCommandLine(int argc, char **argv) {
+/****************************************/
+  /* Variable Declarations */
+  int invalid = FALSE;
+
+  /* Set the default command line arguements */
+  mCmdLine.mPortNum = 50000;
+  sprintf(mCmdLine.sDbName, "%s", "./OAServer.sqlite");
+  mCmdLine.mNumThreads = 10;
+
+  /* Change this to getopts */
+  for(int i = 1; i < argc; i++) {
+    const char *opt = argv[i];
+    if(strcmp(opt, "--db") == 0) {
+      i++;
+      sprintf(mCmdLine.sDbName, "%s", argv[i]);
+    } else if(strcmp(opt, "--port") == 0) {
+      i++;
+      mCmdLine.mPortNum = atoi(argv[i]);
+    } else if(strcmp(opt, "--threads") == 0) {
+      i++;
+      mCmdLine.mNumThreads = atoi(argv[i]);
+    } else if(strcmp(opt, "--help") == 0) {
+      PrintMenu();
+      exit(0);
+    }
+    else { invalid = TRUE; }
+  }
+
+  if(invalid) {
+    PrintMenu();
+    exit(-1);
+  }
+
+  printf("Executing: ./OAServer --port %d --db %s --threads %d\n", mCmdLine.mPortNum, mCmdLine.sDbName, mCmdLine.mNumThreads);
+
+  return(0);
+}
+
+
+/****************************************/
 int rpiServerMain(void) {
+/****************************************/
 
   /* Variable Declaration */
-  OAServer mOAServer(50000, (char*)"./OAServer.sqlite", 10);
+  OAServer mOAServer(mCmdLine.mPortNum, mCmdLine.sDbName, mCmdLine.mNumThreads);
 
   mOAServer.SetVerbose(TRUE);
   mOAServer.Run();
@@ -110,8 +164,11 @@ int rpiServerMain(void) {
   return(0);
 }
 
-int main() {
 
+/****************************************/
+int main(int argc, char **argv) {
+/****************************************/
+  ParseCommandLine(argc, argv);
   rpiServerMain();
 }
 

@@ -1,5 +1,5 @@
 ################################################################################
-# Makefile for the RPiServer exec
+# Makefile for the OAServer Unit Test
 ################################################################################
 #
 # Author: Joshua Eliser
@@ -22,11 +22,11 @@ ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
 ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} -lpthread
 
 # Files to be compiled by the makefile
-SRCS = UnitTest.cpp
+SRCS = unittest.cpp
 OBJS = ${SRCS:.cpp=.o}
 
 # Main build target
-TARGETS = UnitTest
+TARGETS = unittest
 
 # Compiler
 CC = g++
@@ -36,22 +36,18 @@ all: ${TARGETS}
 ${OBJS} : ${SRCS} ${LOCAL_INCLS} ./Makefile
 	${CC} ${ALL_PATHS} -c $*.cpp -o $*.o
 
-UnitTest: ${OBJS} ${LOCAL_INCLS}
+unittest: ${OBJS} ${LOCAL_INCLS}
 	${CC} ${ALL_PATHS} -o $@ ${OBJS} ${ALL_LIBS}
 
 it_all:
-	@echo " "
-	@echo "         Making ${LIB_NAME} executable"
+	echo " "
+	echo "         Making ${LIB_NAME} executable"
 	make -s
-	@echo "         Installing ${LIB_NAME} executable"
-	make -s all
 
 clean:
 	rm -f ${TARGETS} ${OBJS}
-	rm -f ${ROOT_BIN_PATH}/OAServer
 
 clean_app:
 	rm -f ${TARGETS}
-	rm -f ${ROOT_BIN_PATH}/OAServer
 
 

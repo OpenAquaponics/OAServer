@@ -57,6 +57,10 @@ class HandlerThread : public EthernetList {
     int SetThreadPID(int p) { this->mThreadPID = p; };
 
     int AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock);
+    int UpdateThreadPriority(void);
+    int ProcessPacket(unsigned char *pData);
+    int ExecuteSQLQuery(void);
+
     virtual int ProcessData(Ethernet *pSock);
 
   protected:
@@ -69,6 +73,7 @@ class HandlerThread : public EthernetList {
     pthread_t thread;
     int mThreadPriority;
     unsigned int mThreadPID;
+    Database *pDb;
 
 };
 

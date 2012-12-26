@@ -22,7 +22,7 @@ ALL_PATHS       = ${ALL_INCL_PATHS} ${ALL_LIB_PATHS}
 ALL_LIBS        = ${LIB_ETHERNET} ${LIB_DATABASE} -lpthread
 
 # Files to be compiled by the makefile
-SRCS = HandlerThread.cpp OAServer.cpp Application.cpp
+SRCS = HandlerThreadUtil.cpp HandlerThread.cpp OAServer.cpp Application.cpp
 OBJS = ${SRCS:.cpp=.o}
 
 # Main build target
@@ -40,10 +40,10 @@ OAServer: ${OBJS} ${LOCAL_INCLS}
 	${CC} ${ALL_PATHS} -o $@ ${OBJS} ${ALL_LIBS}
 
 it_all:
-	@echo " "
-	@echo "         Making ${LIB_NAME} executable"
+	echo " "
+	echo "         Making ${LIB_NAME} executable"
 	make -s
-	@echo "         Installing ${LIB_NAME} executable"
+	echo "         Installing ${LIB_NAME} executable"
 	make -s all
 	cp ./OAServer ${ROOT_BIN_PATH}
 
