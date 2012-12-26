@@ -100,10 +100,11 @@ class Ethernet {
     int ConfigRecvTimeout(int msec);
     int ConfigXmitTimeout(int msec);
 
-    int Recv(unsigned char *buff, int mNumBytes);
-    int Send(unsigned char *buff, int mNumBytes);
-    int Peek(int mNumBytes);
-    int Peek(void);
+    int  Recv(unsigned char *buff, int mNumBytes);
+    int  Send(unsigned char *buff, int mNumBytes);
+    int  Peek(int mNumBytes);
+    int  Peek(void);
+    bool Seek(int mVal, int mAttempts); /* Make a template for multiple sizes */
 
     SOCKET_TYPE_e     GetSocketType() { return(this->mSockType); }
     SOCKET_PROTOCOL_e GetSocketProtocol() { return(this->mSockProto); }

@@ -169,7 +169,7 @@ int Ethernet::Peek(int mNumBytes) {
 /****************************************/
 int Ethernet::Peek(void) {
 /****************************************/
-  char pBuff;
+  char pBuff = 0;
 
   if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
     return(-1);
@@ -179,6 +179,33 @@ int Ethernet::Peek(void) {
   }
 
   return(-1);
+}
+
+
+/****************************************/
+bool Ethernet::Seek(int mVal, int mAttempts) {
+/****************************************/
+  int mBuff = mVal - 1;
+
+  if(this->mSockProto == SOCKET_PROTOCOL_UDP) {
+    return(FALSE);
+  }
+  else if(this->mSockProto == SOCKET_PROTOCOL_TCP) {
+    for(int i = mAttempts; (i > 0) && (mBuff != mVal); i--) {
+      if(recv(mSock.fd, &mBuff, sizeof(mBuff), MSG_PEEK) != sizeof(mBuff)) {
+        printf("ERR: Ethernet::Seek() -> Failed on MSG_PEEK\n");
+        return(FALSE);
+      }
+      else if(mBuff == mVal) {
+        return(TRUE);
+      }
+      else {
+        recv(mSock.fd, &mBuff, sizeof(mBuff), 0);
+      }
+    }
+  }
+
+  return(FALSE);
 }
 
 

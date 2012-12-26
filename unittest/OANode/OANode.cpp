@@ -45,13 +45,16 @@ int OANode::Debug(void) {
   char *pBuff = NULL;
   PacketHeader_t mHdr;
 
+  /* TODO - There should a debug that exercises off-nominals
+      and then one that has valid data, but tons of it */
+
   /* Randomly decide if something should be transmitted */
   if(rand() % 2) {
     mNumBytes = rand() % 2048;
     if((pBuff = (char*)malloc(mNumBytes)) != NULL) {
       mHdr.mSync     = SYNC;
       mHdr.mNumBytes = mNumBytes;
-      mHdr.mChecksum = ComputeChecksum((int*)pBuff, mHdr.mNumBytes);
+      mHdr.mChecksum = ComputeChecksum((int*)pBuff, mHdr.mNumBytes) + (rand() % 2);
 
       pSock->Send((unsigned char*)&mHdr, sizeof(mHdr));
       pSock->Send((unsigned char*)pBuff, mHdr.mNumBytes);

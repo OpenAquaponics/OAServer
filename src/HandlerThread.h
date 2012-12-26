@@ -19,6 +19,7 @@
 /* user includes */
 #include "Ethernet.h"
 #include "Database.h"
+#include "Util.h"
 
 /* defines */
 
@@ -40,7 +41,7 @@ bool SortSharedPtr(const boost::shared_ptr<A>& lhs, const boost::shared_ptr<A>& 
 
 
 /* class */
-class HandlerThread : public EthernetList {
+class HandlerThread : public EthernetList, public Util {
   private:
     void Init(void);
 

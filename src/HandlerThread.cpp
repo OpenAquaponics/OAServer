@@ -81,9 +81,12 @@ int HandlerThread::ProcessData(Ethernet *pSock) {
     /* Somebody disconnected, get details and close */
     printf("INFO: Host disconnecting socket: %d\n", pSock->GetSocketFd());
     RemoveSocket(pSock->GetSocketFd());
+    return(0);
   }
-  /* There is data on the socket, so process it */
-  else if((mRetVal = pSock->Recv((unsigned char*)&mHdr, sizeof(mHdr))) == sizeof(mHdr)) {
+
+  /* Verify the sync packet is at the beginning of the buffer and then process the data */
+  if((pSock->Seek(SYNC, 50)) &&
+     (mRetVal = pSock->Recv((unsigned char*)&mHdr, sizeof(mHdr))) == sizeof(mHdr)) {
     /* Determine if more memory is needed */
     if((sizeof(mHdr) + mHdr.mNumBytes) > sizeof(mBuff)) {
       pData = (unsigned char*)malloc(sizeof(mHdr) + mHdr.mNumBytes);
@@ -93,6 +96,7 @@ int HandlerThread::ProcessData(Ethernet *pSock) {
     if(pData) {
       memcpy(pData, &mHdr, sizeof(mHdr));
       if((mRetVal = pSock->Recv((unsigned char*)&pData[sizeof(mHdr)], mHdr.mNumBytes)) != mHdr.mNumBytes) {
+        /* TODO - Should you request more data, or just assume it's gone? */
         printf("ERR:  Error reading socket data (%d of %d)\n", mRetVal, mHdr.mNumBytes);
       }
       else {
@@ -109,7 +113,7 @@ int HandlerThread::ProcessData(Ethernet *pSock) {
     free(pData);
   }
 
-
+  return(0);
 }
 
 
