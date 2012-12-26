@@ -22,11 +22,14 @@ int HandlerThread::ExecuteSQLQuery(void) {
 int HandlerThread::ProcessPacket(unsigned char *pData) {
 /****************************************/
   PacketHeader_t *pHdr = (PacketHeader_t*)pData;
+  char *pStr = (char*)&pData[sizeof(PacketHeader_t)];
 
   /* Sanity check */
   if(!pData) {
     return(-1);
   }
+
+  printf("%s\n", pStr);
 
   if(pHdr->mChecksum != ComputeChecksum((int*)&pData[sizeof(PacketHeader_t)], pHdr->mNumBytes)) {
     return(-1);

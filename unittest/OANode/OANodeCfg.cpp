@@ -164,22 +164,25 @@ int OANodeCfg::LoadSensors(void) {
 
 
 /****************************************/
-int OANodeCfg::Step(void) {
+std::string OANodeCfg::SampleSensors(void) {
 /****************************************/
   /* Variable Declaration */
-  string sJsonDb = "{OASensor:[";
+  Json::FastWriter mWrite;
+  Json::Value vMsg;
+  Json::Value vSample(Json::arrayValue);
+  Json::Value vUnits(Json::arrayValue);
 
   /* Poll all of the sensors */
   for(int i = 0; i < vpOASensor.size(); i++) {
-    if(i) { sJsonDb.append(","); }
-
     switch(vpOASensor[i]->GetType()) {
       case OASENSOR_AI:
-/* Can this be 2 significant digits?? */
-        sJsonDb.append(boost::lexical_cast<std::string>(((SensorAI*)vpOASensor[i])->ProcessSensor()));
+        /* Can this be 2 significant digits?? */
+        vSample.append(((SensorAI*)vpOASensor[i])->ProcessSensor());
+        vUnits.append(vpOASensor[i]->GetUnits());
         break;
       case OASENSOR_DO:
-        sJsonDb.append(boost::lexical_cast<std::string>(((SensorDO*)vpOASensor[i])->ProcessSensor()));
+        vSample.append(((SensorDO*)vpOASensor[i])->ProcessSensor());
+        vUnits.append(vpOASensor[i]->GetUnits());
         break;
       default:
         {
@@ -192,11 +195,14 @@ int OANodeCfg::Step(void) {
     }
   }
 
-  sJsonDb.append("] }");
+  /* Build the JSON message */
+  vMsg[sRootNameCfg]["mSystemId"] = GetSystemId();
+  vMsg[sRootNameCfg]["mDeviceId"] = GetDeviceId();
+  vMsg[sRootNameSensor]["Sample"] = vSample;
+  vMsg[sRootNameSensor]["Units"]  = vUnits;
+  //cout << vMsg << endl;
 
-  cout << sJsonDb << endl;
-
-  return(0);
+  return(mWrite.write(vMsg));
 }
 
 

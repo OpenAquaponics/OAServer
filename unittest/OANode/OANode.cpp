@@ -37,6 +37,44 @@ OANode::~OANode(void) {
 
 
 /****************************************/
+int OANode::Step(void) {
+/****************************************/
+  /* Step OANode by sampling the data and sending it over the socket */
+  if(pOANodeCfg) {
+    /* Variable Declaration */
+    unsigned char  *pBuff = NULL;
+    PacketHeader_t *pHdr  = NULL;
+    char *pStr  = NULL;
+    std::string sSampleMsg = pOANodeCfg->SampleSensors(); /* Poll the sensors */
+    int mNumBytes = sSampleMsg.size() + sizeof(PacketHeader_t) + 1;
+
+    /* Build the packet to be written */
+    if((pBuff = (unsigned char*)malloc(mNumBytes))) {
+      /* Load pointers */
+      pHdr = (PacketHeader_t*)pBuff;
+      pStr = (char*)&pBuff[sizeof(PacketHeader_t)];
+
+      /* Copy JSON sample data and build header */
+      memcpy(pStr, sSampleMsg.c_str(), sSampleMsg.size() + 1);
+      pHdr->mSync       = SYNC;
+      pHdr->mNumBytes   = mNumBytes - sizeof(PacketHeader_t);
+      pHdr->mTimeTagSec = 0; /* Add system time NTP */
+      pHdr->mDeviceId   = pOANodeCfg->GetDeviceId();
+      pHdr->mMsgType    = 123; /* Create a message type name */
+      pHdr->mChecksum   = ComputeChecksum((int*)pStr, pHdr->mNumBytes);
+
+      /* Send data over the socket */
+      pSock->Send((unsigned char*)pBuff, mNumBytes);
+
+      free(pBuff);
+    }
+  }
+
+  return(0);
+}
+
+
+/****************************************/
 int OANode::Run(void) {
 /****************************************/
 
@@ -57,6 +95,7 @@ int OANode::Debug(void) {
 
   Step();
 
+#if 0
   /* Randomly decide if something should be transmitted */
   if(rand() % 2) {
     mNumBytes = rand() % 2048;
@@ -72,6 +111,7 @@ int OANode::Debug(void) {
     if(pBuff) free(pBuff);
     pBuff = NULL;
   }
+#endif
 
   return(0);
 }

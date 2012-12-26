@@ -9,6 +9,7 @@
 #include <time.h>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <list>
 #include <vector>
 
@@ -55,11 +56,7 @@ class OANodeCfg {
 
     int  LoadJSONFile(std::string sFilename);
     void PrintJSONFile(void) { std::cout << root.toStyledString(); };
-    int  Step(void);
-
-  protected:
-    int  LoadParams(void);
-    int  LoadSensors(void);
+    std::string SampleSensors(void);
 
     void SetSystemId(unsigned int id) { this->mSystemId = id; };
     void SetDeviceId(unsigned int id) { this->mDeviceId = id; };
@@ -70,6 +67,10 @@ class OANodeCfg {
     unsigned int GetDeviceId(void) { return(mDeviceId); };
     std::string  GetOAServerIp(void) { return(sOAServerIp); };
     unsigned int GetOAServerPort(void) { return(mOAServerPort); };
+
+  protected:
+    int  LoadParams(void);
+    int  LoadSensors(void);
 
   private:
     std::string  sAcctHash;
@@ -117,13 +118,12 @@ class OANode : public Util {
     int Debug(void);
 
   protected:
-    int Step(void) { if(pOANodeCfg) pOANodeCfg->Step(); };
+    int Step(void);
 //    std::string BuildJSONMessage(int mType);
 
   private:
     OANodeCfg *pOANodeCfg;
     Ethernet  *pSock;
-    Database  *pDb;
 
     int mVerbose;
     int mNumThreads; 

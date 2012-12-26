@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
 /****************************************/
   /* Variable Declaration */
 
+#if 0
   printf("INFO: Reading JSON files\n");
   Json::Value root;
   Json::Reader reader;
@@ -42,8 +43,9 @@ int main(int argc, char **argv) {
       cout << "Extracted: " << root["OANodeCfg"].get(param[i], "").asString() << endl;
     }
   }
+#endif
 
-#if 0
+#if 1
   printf("INFO: Spawning the OANodes\n");
   std::list< boost::shared_ptr<OANode> > lpClients;
   for(int i = 0; i < CLIENT_CNT; i++) {
