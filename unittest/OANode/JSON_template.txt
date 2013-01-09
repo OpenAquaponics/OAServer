@@ -1,0 +1,128 @@
+{
+    "OANodeCfg" {
+        "mAccHash"          : "SOME ACCT HASH"
+        "mSystemId"         : "0x1SDF5345DS0G",
+        "mDeviceId"         : "0x23DFTWV34GDG",
+        "sName"             : "Node in the upper growbed",
+        "mSampleTimeSecs"   : "5",
+        "sDescription"      : "This unit is the initial system",
+        "mOAServerIp"       : "127.0.0.1",  // www.mynode.openaquaponics.org
+        "mOAServerPort"     : "50000",
+        "mSaveFile"         : "1",
+    },
+    
+    "OASensor" [
+        {
+            "sDescription"  : "Outdoor temperature sensor",
+            "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
+            "sUnits"        : "F",
+            "mPin"          : "10",
+            // How would you put conversion information in here??
+            "OATask" [
+                {
+                    "mTaskType"     : "SMS", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mNumSamples"   : "20",
+                    "mValue"        : "80",
+                    "mDescription"  : "It's really hot outside.  Check on the fish and the plants.",
+                    // Based on mEventType
+                    "mPhoneNumber"  : "2561234567",
+                    "mMessage"      : "Boy it's hot out here",
+                    "mTimeout"      : "DAY" // "HOUR", "DAY", "WEEK", "MONTH"
+                },
+                {
+                    "mTaskType"     : "SMS", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mNumSamples"   : "20",
+                    "mValue"        : "32",
+                    "mDescription"  : "You might think about bringing the fish in",
+                    // Based on mEventType
+                    "mPhoneNumber"  : "2561234567",
+                    "mMessage"      : "Boy it's hot out here",
+                    "mTimeout"      : "WEEK" // "HOUR", "DAY", "WEEK", "MONTH"
+                },
+            ]
+        },
+        {
+            "sDescription"  : "Outdoor humidity sensor",
+            "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
+            "sUnits"        : "%",
+            "mPin"          : "13",
+        },
+        {
+            "sDescription"  : "Water level sensor",
+            "mType"         : "AI", // AI, AO, DI, DO, SER, TCP, UDP
+            "sUnits"        : "mm",
+            "mPin"          : "17",
+            "OATask" [
+                {
+                    "mTaskType"     : "ON", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mNumSamples"   : "3",
+                    "mValue"        : "100",
+                    "mDescription"  : "Turn ON pump when water level drops too low",
+                    // Based on mEventType
+                    "mPin"          : "16",
+                },
+                {
+                    "mTaskType"     : "OFF", // "ON", "OFF", "SMS", "TWITTER", "EMAIL", "ETC"
+                    "mNumSamples"   : "1",
+                    "mValue"        : "50",
+                    "mDescription"  : "Turn OFF pump when water level drops too low",
+                    // Based on mEventType
+                    "mPin"          : "16",
+                },
+            ],
+        },
+        {
+            "sDescription"  : "Water Pump",
+            "mType"         : "DO", // AI, AO, DI, DO, SER, TCP, UDP
+            "sUnits"        : "",
+            "mPin"          : "16",
+            "mDefaultVal"   : "1",
+        },
+    ],
+    
+    "OATaskAdvanced" [
+        // Add complex monitoring definitions here
+    ],
+}
+
+
+//OASample
+{
+// Is this required?  The OANode connection will already have been established so the connection should be clean.
+// Before adding a new connection, the server should see if there is a duplicate mSystemId and mDeviceId in the connection list,
+//   if so, both connections should be dropped.  The next time OANode trys to send data, it will reestablish the connection.
+// If you continue to get duplicate connections (like 10 times in a 6 hrs, etc), email the user that they probably configured
+//   two node to be exactly the same.  Server should indicate that mSystemId/mDeviceId is in 'warning' mode.  OAServer will have
+//   a black listed ID list to reject incoming connections for 1/2 or something.
+    "mHashMD5"          : "md5(mAccHash, mSystemId, mDeviceId, mTimeTagSec)"
+//
+//
+    "mSystemId"         : "0x1SDF5345DS0G",
+    "mDeviceId"         : "0x23DFTWV34GDG",
+    "mTimeTagSecs"      : "34802134234"
+    "mNumSamples"       : "4" // Is this needed?
+    "mSamples"
+    {
+        "mValue"    : [75.3, 89.0, 123.5, 0],  // Max 16
+        "mUnits"    : ["F", "%", "mm", ""],
+    }
+}
+
+
+class OASenser {
+    description
+    type
+    units
+}
+
+class SensorAO , public Sensor {
+    pin
+}
+
+class SensorAI , public Sensor {
+    pin
+}
+
+class SensorDI , public Sensor {
+    pin
+}
