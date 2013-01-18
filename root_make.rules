@@ -40,6 +40,6 @@ LIB_SERIAL   = -lserial
 LIB_ETHERNET = -lethernet
 LIB_DATABASE = -ldatabase -lsqlite3
 LIB_UTIL     = -lutil
-LIB_JSON     = -ljson_linux-gcc-4.7.0_libmt
+LIB_JSON     = -ljson_linux-gcc-4.7.2_libmt
 
 
