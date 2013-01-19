@@ -63,131 +63,15 @@ abstract class RestApiInterface extends Singleton {
     $this->db = Database::getInstance();
     $this->app = Slim::getInstance();
   }
-  abstract public function all($user, $auth);
-  abstract public function one($user, $id, $auth);
-  abstract public function add($data);
-  abstract public function put($id, $data);
-  abstract public function del($id);
-  abstract public function validate($data);
+  abstract public function all($user, $uid, $opts, $auth);
+  abstract public function one($user, $uid, $opts, $auth);
+  abstract public function add($user, $uid, $opts, $auth, $data);
+  abstract public function put($user, $uid, $opts, $auth, $data);
+  abstract public function del($user, $uid, $opts, $auth);
+  abstract public function validateData($data);
+  abstract public function validateUser($data);
 }
 
-// Example of class implementing interface
-class OAUserInfo extends RestApiInterface {
-  protected $table_name = 'OAUserInfo';
-
-  public function all($user, $auth) {
-    /* PRIVATE - List all username information */
-    if($auth) return $this->db->all('SELECT * FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-    /* PUBLIC - List only the username */
-    else return $this->db->all('SELECT sUsername FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-  }
-  public function one($user, $id, $auth) {
-    return $this->db->all('SELECT * FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-  }
-  public function add($data) {
-    $this->validate($data);
-
-    if($this->db->one('SELECT * FROM users WHERE email=:email', array('email' => $data->email))) throw new ValidationException('Duplicate email');
-
-    $data->id = $this->db->execute('INSERT INTO users VALUES(NULL, :name, :email, :age)', (array)$data);
-    return $data;
-  }
-  public function put($id, $data) {
-    $this->validate($data);
-
-    $this->db->execute('UPDATE users SET name=:name, email=:email, age=:age WHERE id=:id', array_merge((array)$data, array('id' => $id)));
-    return $data;
-  }
-  public function del($id) {
-    $this->db->execute('DELETE FROM users WHERE id=:id', array('id' => $id));
-    return true;
-  }
-  public function validate($data) {
-    if(empty($data->name)) throw new ValidationException('Name is required');
-    if(empty($data->email)) throw new ValidationException('Email is required');
-    if(empty($data->age)) throw new ValidationException('Age is required');
-    if(!filter_var($data->email, FILTER_VALIDATE_EMAIL)) throw new ValidationException('Wrong email');
-    if(!filter_var($data->age, FILTER_VALIDATE_INT, array('min_range' => 1, 'max_range' => 999))) throw new ValidationException('Wrong age');
-  }
-}
-
-class OASystems extends RestApiInterface {
-  protected $table_name = 'OASystemCfg';
-
-  public function all($user, $auth) {
-    /* PRIVATE - List all username information */
-    if($auth) return $this->db->all('SELECT * FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-    /* PUBLIC - List only the username */
-    else return $this->db->all('SELECT sUsername FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-  }
-  public function one($user, $id, $auth) {
-    return $this->db->all('SELECT * FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '" AND sSystemId="' . $id . '"');
-  }
-  public function add($data) {
-    $this->validate($data);
-
-    if($this->db->one('SELECT * FROM users WHERE email=:email', array('email' => $data->email))) throw new ValidationException('Duplicate email');
-
-    $data->id = $this->db->execute('INSERT INTO users VALUES(NULL, :name, :email, :age)', (array)$data);
-    return $data;
-  }
-  public function put($id, $data) {
-    $this->validate($data);
-
-    $this->db->execute('UPDATE users SET name=:name, email=:email, age=:age WHERE id=:id', array_merge((array)$data, array('id' => $id)));
-    return $data;
-  }
-  public function del($id) {
-    $this->db->execute('DELETE FROM users WHERE id=:id', array('id' => $id));
-    return true;
-  }
-  public function validate($data) {
-    if(empty($data->name)) throw new ValidationException('Name is required');
-    if(empty($data->email)) throw new ValidationException('Email is required');
-    if(empty($data->age)) throw new ValidationException('Age is required');
-    if(!filter_var($data->email, FILTER_VALIDATE_EMAIL)) throw new ValidationException('Wrong email');
-    if(!filter_var($data->age, FILTER_VALIDATE_INT, array('min_range' => 1, 'max_range' => 999))) throw new ValidationException('Wrong age');
-  }
-}
-
-class OANodes extends RestApiInterface {
-  protected $table_name = 'OANodeCfg';
-
-  public function all($user, $auth) {
-    /* PRIVATE - List all username information */
-    if($auth) return $this->db->all('SELECT * FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-    /* PUBLIC - List only the username */
-    else return $this->db->all('SELECT sUsername FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '"');
-  }
-  public function one($user, $id, $auth) {
-    return $this->db->all('SELECT * FROM ' . $this->table_name . ' WHERE sUsername="' . $user . '" AND sNodeId="' . $id . '"');
-  }
-  public function add($data) {
-    $this->validate($data);
-
-    if($this->db->one('SELECT * FROM users WHERE email=:email', array('email' => $data->email))) throw new ValidationException('Duplicate email');
-
-    $data->id = $this->db->execute('INSERT INTO users VALUES(NULL, :name, :email, :age)', (array)$data);
-    return $data;
-  }
-  public function put($id, $data) {
-    $this->validate($data);
-
-    $this->db->execute('UPDATE users SET name=:name, email=:email, age=:age WHERE id=:id', array_merge((array)$data, array('id' => $id)));
-    return $data;
-  }
-  public function del($id) {
-    $this->db->execute('DELETE FROM users WHERE id=:id', array('id' => $id));
-    return true;
-  }
-  public function validate($data) {
-    if(empty($data->name)) throw new ValidationException('Name is required');
-    if(empty($data->email)) throw new ValidationException('Email is required');
-    if(empty($data->age)) throw new ValidationException('Age is required');
-    if(!filter_var($data->email, FILTER_VALIDATE_EMAIL)) throw new ValidationException('Wrong email');
-    if(!filter_var($data->age, FILTER_VALIDATE_INT, array('min_range' => 1, 'max_range' => 999))) throw new ValidationException('Wrong age');
-  }
-}
 
 // And here is slim app
 // we are going to catch all requests that starts with api
@@ -195,10 +79,21 @@ class OANodes extends RestApiInterface {
 $app = new Slim(array(
   'cookies.secret_key' => SECRET
 ));
+
+
+// Include all of the URL classes
+// NOTE: $app needs to have already been instantiated.
+//require_once 'OAUserInfo.php';
+require_once 'OASystems.php';
+//require_once 'OANodes.php';
+
+
 // Auth samples
 $app->get('/api/logout', function(){
   Slim::getInstance()->deleteCookie('auth');
 });
+
+
 $app->post('/api/login', function(){
   $app = Slim::getInstance();
   try {
@@ -212,51 +107,6 @@ $app->post('/api/login', function(){
     $app->halt(400, $e->getTrace());
   }
 });
-
-$app->map('/:user(/:class(/:uid))', function($user, $class, $uid = null){
-  $app = Slim::getInstance();
-  try {
-    $class_str = (string)$class;
-
-    // Check that class exists
-    if(!class_exists($class)) throw new NotFoundException();
-    // Check that class implements RestApiInterface
-    if(!is_subclass_of($class, 'RestApiInterface')) throw new NotFoundException();
-
-    $class = $class::getInstance();
-    $method = $app->request()->getMethod();
-
-//    $auth = $app->getEncryptedCookie('auth');
-//    if(in_array($method, array('POST', 'PUT', 'DELETE')) && !$auth) throw new ForbiddenException();
-    if($method == 'GET' && $uid == null) $res = $class->all($user, '1');
-    else if($method == 'GET' && $uid != null) $res = $class->one($user, $uid, '1');
-//    else if($method == 'POST') $res = $class->add(json_decode($app->request()->getBody()));
-//    else if($method == 'PUT' && $id != null) $res = $class->put($id, json_decode($app->request()->getBody()));
-//    else if($method == 'DELETE' && $id != null) $res = $class->del($id);
-    else $app->halt(501); // Not implemented
-
-    if(empty($res)) throw new NotFoundException();
-
-    $json = json_encode($res);
-    $cb = isset($_GET['callback']) ? $_GET['callback'] : false;
-    if($cb) $json = "$cb($json)";
-
-    echo $json;
-  }
-  catch(ValidationException $e) {
-    $app->halt(400, $e->getMessage());
-  }
-  catch(ForbiddenException $e) {
-    $app->halt(403);
-  }
-  catch(NotFoundException $e) {
-    $app->halt(404);
-  }
-  catch(Exception $e) {
-    $app->halt(500, $e->getMessage());
-  }
-})->via('GET', 'POST', 'PUT', 'DELETE')->conditions(array('id' => '\d+'));
-
 
 $app->get('/hello/:name', function ($name) {
   echo "Hello, $name";
