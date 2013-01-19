@@ -1,0 +1,14 @@
+DROP TABLE IF EXISTS OANodeCfg;
+CREATE TABLE OANodeCfg ( sUsername  VARCHAR(32) NOT NULL ,  sSystemId  VARCHAR(16) NOT NULL,  sNodeId  VARCHAR(16) PRIMARY KEY  NOT NULL  UNIQUE,  mNumChannels  INTEGER NOT NULL,  sChannelName  VARCHAR(256) ,  sChannelUnits  VARCHAR(64),  mPollingPeriod  INTEGER NOT NULL  DEFAULT 60,  bPublic  BOOL NOT NULL DEFAULT TRUE,  sDescription  VARCHAR(256));
+INSERT INTO OANodeCfg VALUES('nestinator','54FG23','ER123ER','3','WATER TEMP;WATER LEVEL;LIGHT SENSOR', 'F;mm;lum', '60', '1', 'The first aquaponics system');
+INSERT INTO OANodeCfg VALUES('nestinator','54FG23','UY852RF','3','WATER TEMP;WATER LEVEL;LIGHT SENSOR', 'F;mm;lum', '60', '1', 'The second aquaponics system');
+INSERT INTO OANodeCfg VALUES('nestinator','32KJ45','PO782AS','3','WATER TEMP;WATER LEVEL;LIGHT SENSOR', 'F;mm;lum', '60', '1', 'The third aquaponics system');
+DROP TABLE IF EXISTS OASystemCfg;
+CREATE TABLE OASystemCfg ( sUsername  VARCHAR(32) NOT NULL ,  sSystemId  VARCHAR(16) PRIMARY KEY  NOT NULL  UNIQUE,  mNumNodes  INTEGER NOT NULL,  bPublic  BOOL NOT NULL DEFAULT TRUE,  sDescription  VARCHAR(256));
+INSERT INTO OASystemCfg VALUES('nestinator','54FG23', '2', '1', 'Alpha system');
+INSERT INTO OASystemCfg VALUES('nestinator','32KJ45', '1', '1', 'Beta system');
+DROP TABLE IF EXISTS OAUserInfo;
+CREATE TABLE OAUserInfo ( sUsername  VARCHAR(32) PRIMARY KEY  NOT NULL  UNIQUE ,  sPassword  VARCHAR(32) NOT NULL ,  sEmail  VARCHAR(64) NOT NULL  UNIQUE ,  sFirstName  VARCHAR(32) NOT NULL,  bPublic  BOOL NOT NULL  DEFAULT TRUE);
+INSERT INTO OAUserInfo VALUES('nestinator','123','nessi@email.com','Nes','1');
+INSERT INTO OAUserInfo VALUES('hello','123','hello_world@email.com','Me','1');
+INSERT INTO OAUserInfo VALUES('tomtom','123','tommy@email.com','Tom','0');
