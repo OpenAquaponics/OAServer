@@ -110,8 +110,8 @@ $app = new Slim(array(
 
 // Include all of the URL classes
 // NOTE: $app needs to have already been instantiated.
-//require_once 'OAUserInfo.php';
-//require_once 'OASystems.php';
+require_once 'OAUserInfo.php';
+require_once 'OASystems.php';
 require_once 'OANodes.php';
 
 

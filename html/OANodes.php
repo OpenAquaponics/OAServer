@@ -78,6 +78,7 @@ class OANodes extends RestApiInterface {
   public function del($user, $uid, $opts, $auth) {
     if(!$auth) throw new ForbiddenException();
 
+    // Make sure $user owns the database row.
     $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
     if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
 
