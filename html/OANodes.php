@@ -5,11 +5,6 @@ class OANodes extends RestApiInterface {
   protected $tbl = 'OANodeCfg';
 
   public function all($user, $uid, $opts, $auth) {
-    // Example of how to accept incoming optional arguements
-    // http://localhost/index.php/nestinator/OASystems/54FG23?pos[]=23.3&pos[]=34.5
-    //$opts = $app->request();
-    //echo var_dump($opts->get('pos'));
-
     /* PRIVATE - Show all of available systems */
     if($auth) return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername', array('sUsername' => $user));
     /* PUBLIC - Show only the public systems */
@@ -25,12 +20,13 @@ class OANodes extends RestApiInterface {
 
   public function add($user, $uid, $opts, $auth, $data) {
     // Validate the user and incoming data
-    if(!$auth) throw new NotFoundException();
+    if(!$auth) throw new ForbiddenException();
+    if(!isset($data)) $data = json_decode('{}');
     $this->validateUser($user);
     $this->validateData($data);
 
     // Make sure required parameters are present
-    if(isset($data->mNumChannels)) throw new ValidationException('mNumChannels is required.');
+    if(!isset($data->mNumChannels)) throw new ValidationException('mNumChannels is required.');
 
     // Make sure these data fields are present
     $data->sUsername = $user;
@@ -41,41 +37,55 @@ class OANodes extends RestApiInterface {
     $data->id = $this->db->execute('INSERT INTO '.$this->tbl.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data);
 
     // TODO - If successful, create a new table the 'data' database
-//    $data->new_tbl = sNodeId;
+//    $data->new_tbl = db2->CREATE TABLE sNodeId;
+//    $this->db(Update mNumNodes in OASystemCfg);
 
     return $data;
   }
 
   public function put($user, $uid, $opts, $auth, $data) {
     // Validate the user and incoming data
-    if(!$auth) throw new NotFoundException();
+    if(!$auth) throw new ForbiddenException();
+    if(!isset($data)) $data = json_decode('{}');
     $this->validateUser($user);
     $this->validateData($data);
 
     // Sanity check on the incoming request
-    if(isset($data->sNodeId)) {
-      if($data->sNodeId != $uid) throw new ValidationException('sNodeId doesn\'t match.');
-    }
     $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
-    if(empty($ret)) throw new ForbiddenException();
+    if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
+
+    if(isset($data->sNodeId)) {
+      if($data->sNodeId != $uid) throw new ValidationException('sNodeId mismatch.');
+    }
+
+    // TODO - If mNumChannels doesn't match, return an error
+    //        Eventually this should archive the old table and create and a new table
+    if(isset($data->mNumChannels)) {
+      $ret = $this->db->all('SELECT mNumChannels FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
+      if(empty($ret) || ($ret[0]->mNumChannels != $data->mNumChannels)) throw new ValidationException('mNumChannels do not match.  Delete this node and create a new one');
+    }
 
     // Make sure these data fields are present
     $data->sUsername = $user;
     $data->sNodeId = $uid;
 
-    // TODO - If mNumChannels matches, continue
-    // TODO - If mNumChannels doesn't match, there needs to be a manner to delete the other table and create a new one.
-
+    // Create the new database entry using the supplied JSON field
     $ret = $this->prepareExecute($data);
     $data->id = $this->db->execute('UPDATE '.$this->tbl.' SET '.$ret['pairs'].' WHERE sNodeId=:sNodeId', (array)$data);
     return $data;
   }
 
   public function del($user, $uid, $opts, $auth) {
-    if(!$auth) throw new NotFoundException();
+    if(!$auth) throw new ForbiddenException();
+
+    $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
+    if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
 
     // TODO - Should this just toggle an enable/disable disable field in the database?
-    $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sSystemId=:sSystemId', array('sSystemId' => $uid));
+    $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
+
+    // TODO - Should also delete the cooresponding 'data' table
+
     return true;
   }
 
@@ -119,9 +129,9 @@ $app->map('/:user/OANodes(/:uid)', function($user, $uid = null){
 
     $class = $class::getInstance();
     $method = $app->request()->getMethod();
-    $opts = $app->request();  //* TODO - This should parse out from /URL/?options component
+    $opts = $app->request();  // TODO - This should parse out from /URL/?options component
 
-
+//    Need to get authentication running at some point
 //    $auth = $app->getEncryptedCookie('auth');
 //    if(in_array($method, array('POST', 'PUT', 'DELETE')) && !$auth) throw new ForbiddenException();
 
@@ -135,9 +145,6 @@ $app->map('/:user/OANodes(/:uid)', function($user, $uid = null){
     if(empty($res)) throw new NotFoundException();
 
     $json = json_encode($res);
-    $cb = isset($_GET['callback']) ? $_GET['callback'] : false;
-    if($cb) $json = "$cb($json)";
-
     echo $json;
 
   }
