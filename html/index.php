@@ -69,7 +69,34 @@ abstract class RestApiInterface extends Singleton {
   abstract public function put($user, $uid, $opts, $auth, $data);
   abstract public function del($user, $uid, $opts, $auth);
   abstract public function validateData($data);
-  abstract public function validateUser($data);
+  abstract public function validateUser($user);
+
+  public function prepareExecute($data) {
+    $ret = array('cols' => '', 'vals' => '', 'pairs' => '');
+
+    foreach(array_keys((array)$data) as $key) {
+      $ret['cols']  .= $key.',';
+      $ret['vals']  .= ':'.$key.',';
+      $ret['pairs'] .= $key.'=:'.$key.',';
+    }
+    $ret['cols'] = substr_replace($ret['cols'], '', -1);
+    $ret['vals'] = substr_replace($ret['vals'], '', -1);
+    $ret['pairs'] = substr_replace($ret['pairs'], '', -1);
+
+    return($ret);
+  }
+
+  public function generateUID($tbl, $col, $attempts) {
+    $rand = 0;
+    $ret = 1;
+    for($i = 0; ($i < $attempts) && (!empty($ret)); $i++) {
+      $rand = strtoupper(dechex(rand(0,getrandmax())));
+      $ret = $this->db->all('SELECT '.$col.' FROM '.$tbl.' WHERE '.$col.'=:sSystemId', array('sSystemId' => $rand));
+    }
+    if(!empty($ret)) $app->halt(501);
+
+    return($rand);
+  }
 }
 
 
@@ -84,8 +111,8 @@ $app = new Slim(array(
 // Include all of the URL classes
 // NOTE: $app needs to have already been instantiated.
 //require_once 'OAUserInfo.php';
-require_once 'OASystems.php';
-//require_once 'OANodes.php';
+//require_once 'OASystems.php';
+require_once 'OANodes.php';
 
 
 // Auth samples

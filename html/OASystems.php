@@ -11,7 +11,7 @@ class OASystems extends RestApiInterface {
     //echo var_dump($opts->get('pos'));
 
     /* PRIVATE - Show all of available systems */
-    if($auth) return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername="' . $user . '"');
+    if($auth) return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername', array('sUsername' => $user));
     /* PUBLIC - Show only the public systems */
     else return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername AND bPublic=1', array('sUsername' => $user));
   }
@@ -66,7 +66,7 @@ class OASystems extends RestApiInterface {
   public function validateData($data) {
 // TODO - This should validate the data and also build an array that can be used for the SQL query string
 // TODO - Does the username need to be validated?  Seems like each message is going to have its own requirements
-    if(empty($data->sUsername)) throw new ValidationException('Username is required');
+    if(empty($data->sUsername)) throw new ValidationException('sUsername is required');
   }
 
   public function validateUser($user) {
