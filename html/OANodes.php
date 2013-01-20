@@ -36,9 +36,16 @@ class OANodes extends RestApiInterface {
     $ret = $this->prepareExecute($data);
     $data->id = $this->db->execute('INSERT INTO '.$this->tbl.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data);
 
-    // TODO - If successful, create a new table the 'data' database
-//    $data->new_tbl = db2->CREATE TABLE sNodeId;
-//    $this->db(Update mNumNodes in OASystemCfg);
+    // Create a new table to hold the sampling data
+    // For some reason the database call returns a failure, but it
+    //   performs the operation correctly in the database
+    //   SQLSTATE[HY000]: General error
+    try {
+      $str = 'OAData.'.$data->sNodeId;
+      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mNum INT PRIMARY KEY AUTO_INCREMENT NOT NULL, sData VARCHAR(128))');
+    }
+    catch(Exception $e) {
+    }
 
     return $data;
   }
@@ -119,7 +126,7 @@ class OANodes extends RestApiInterface {
 }
 
 /* The SLIM application callback for the /{UID}/OANodes URL */
-$app->map('/:user/OANodes(/:uid)', function($user, $uid = null){
+$app->map('/v1/:user/OANodes(/:uid)', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OANodes';
   try {

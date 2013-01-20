@@ -116,12 +116,12 @@ require_once 'OANodes.php';
 
 
 // Auth samples
-$app->get('/api/logout', function(){
+$app->get('/api/v1/logout', function(){
   Slim::getInstance()->deleteCookie('auth');
 });
 
 
-$app->post('/api/login', function(){
+$app->post('/api/v1/login', function(){
   $app = Slim::getInstance();
   try {
     $data = json_decode($app->request()->getBody());

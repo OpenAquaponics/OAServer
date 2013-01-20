@@ -90,7 +90,7 @@ class OASystems extends RestApiInterface {
 }
 
 /* The SLIM application callback for the /{UID}/OASystems URL */
-$app->map('/:user/OASystems(/:uid)', function($user, $uid = null){
+$app->map('/v1/:user/OASystems(/:uid)', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OASystems';
   try {
