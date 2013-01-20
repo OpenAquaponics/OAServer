@@ -53,7 +53,7 @@ class OAUserInfo extends RestApiInterface {
     return $data;
   }
 
-  public function del($user, $uid, $opts, $auth) {
+  public function del($user, $uid, $opts, $auth, $data) {
     if(!$auth) throw new ForbiddenException();
 
     // Make sure $user owns the database row.
@@ -105,7 +105,7 @@ $app->map('/v1/:user/OAUser', function($user, $uid = null){
     if($method == 'GET') $res = $class->one($user, $uid, $opts, '1');
     else if($method == 'POST' && $uid == null) $res = $class->add($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'PUT' && $uid == null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
-    else if($method == 'DELETE' && $uid == null) $res = $class->del($user, $uid, $opts, '1');
+    else if($method == 'DELETE' && $uid == null) $res = $class->del($user, $uid, $opts, '1', null);
     else $app->halt(501); // Not implemented
 
     if(empty($res)) throw new NotFoundException();

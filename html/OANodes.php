@@ -25,9 +25,6 @@ class OANodes extends RestApiInterface {
     $this->validateUser($user);
     $this->validateData($data);
 
-    // Make sure required parameters are present
-    if(!isset($data->mNumChannels)) throw new ValidationException('mNumChannels is required.');
-
     // Make sure these data fields are present
     $data->sUsername = $user;
     $data->sNodeId = $this->generateUID($this->tbl, 'sNodeId', 5);
@@ -65,13 +62,6 @@ class OANodes extends RestApiInterface {
       if($data->sNodeId != $uid) throw new ValidationException('sNodeId mismatch.');
     }
 
-    // TODO - If mNumChannels doesn't match, return an error
-    //        Eventually this should archive the old table and create and a new table
-    if(isset($data->mNumChannels)) {
-      $ret = $this->db->all('SELECT mNumChannels FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
-      if(empty($ret) || ($ret[0]->mNumChannels != $data->mNumChannels)) throw new ValidationException('mNumChannels do not match.  Delete this node and create a new one');
-    }
-
     // Make sure these data fields are present
     $data->sUsername = $user;
     $data->sNodeId = $uid;
@@ -82,17 +72,16 @@ class OANodes extends RestApiInterface {
     return $data;
   }
 
-  public function del($user, $uid, $opts, $auth) {
+  public function del($user, $uid, $opts, $auth, $data) {
     if(!$auth) throw new ForbiddenException();
 
     // Make sure $user owns the database row.
     $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
     if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
 
-    // TODO - Should this just toggle an enable/disable disable field in the database?
+    // Delete the node information from the database and remove the data table
     $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
-
-    // TODO - Should also delete the cooresponding 'data' table
+    $this->db->execute('DROP TABLE IF EXISTS OAData.'.$uid);
 
     return true;
   }
@@ -125,6 +114,7 @@ class OANodes extends RestApiInterface {
 
 }
 
+
 /* The SLIM application callback for the /{UID}/OANodes URL */
 $app->map('/v1/:user/OANodes(/:uid)', function($user, $uid = null){
   $app = Slim::getInstance();
@@ -147,7 +137,135 @@ $app->map('/v1/:user/OANodes(/:uid)', function($user, $uid = null){
     else if($method == 'GET' && $uid != null) $res = $class->one($user, $uid, $opts, '1');
     else if($method == 'POST' && $uid == null) $res = $class->add($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'PUT' && $uid != null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
-    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1');
+    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1', null);
+    else $app->halt(501); // Not implemented
+
+    if(empty($res)) throw new NotFoundException();
+
+    $json = json_encode($res);
+    echo $json;
+
+  }
+  catch(ValidationException $e) {
+    $app->halt(400, $e->getMessage());
+  }
+  catch(ForbiddenException $e) {
+    $app->halt(403);
+  }
+  catch(NotFoundException $e) {
+    $app->halt(404);
+  }
+  catch(Exception $e) {
+    $app->halt(500, $e->getMessage());
+  }
+})->via('GET', 'POST', 'PUT', 'DELETE')->conditions(array('id' => '\d+'));
+
+
+/*******************************************/
+
+/* The class definition for /{UID}/OANodes/{NID}/data */
+class OAData extends RestApiInterface {
+  protected $dbname = 'OAData';
+
+  public function all($user, $uid, $opts, $auth) {
+    /* TODO - Need to verify the OANode settings before providing data, is it public, who's the owner, etc */
+
+    /* PRIVATE - Show all of available systems */
+    if($auth) return $this->db->all('SELECT * FROM '.$this->dbname.'.'.$uid.' ORDER BY mNum DESC LIMIT 32');
+    /* PUBLIC - Show only the public systems */
+//    else return $this->db->all('SELECT * FROM '.$db.'.'.$uid.' ORDER BY mNum DESC LIMIT 32 WHERE sUsername=:sUsername AND bPublic=1', array('sUsername' => $user));
+  }
+
+  public function one($user, $uid, $opts, $auth) {
+  }
+
+  public function add($user, $uid, $opts, $auth, $data) {
+    // Validate the user and incoming data
+    if(!$auth) throw new ForbiddenException();
+    if(!isset($data)) $data = json_decode('{}');
+    $this->validateUser($user);
+    $this->validateData($data);
+
+    /* TODO - Need to verify the OANode settings before saving data, is it public, who's the owner, etc */
+
+    // Create the new database entry using the supplied JSON field
+    $ret = $this->prepareExecute($data);
+    $data->id = $this->db->execute('INSERT INTO '.$this->dbname.'.'.$uid.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data);
+
+    return $data;
+  }
+
+  public function put($user, $uid, $opts, $auth, $data) {
+    // Validate the user and incoming data
+    if(!$auth) throw new ForbiddenException();
+    if(!isset($data)) $data = json_decode('{}');
+    $this->validateUser($user);
+    $this->validateData($data);
+
+    // Sanity check on the incoming request
+    if(!isset($data->mNum)) throw new NotFoundException();
+    $ret = $this->db->all('SELECT mNum FROM '.$this->dbname.'.'.$uid.' WHERE mNum=:mNum', array('mNum' => $data->mNum));
+    if(empty($ret)) throw new NotFoundException();
+
+    /* TODO - Need to verify the OANode settings before updating data, is it public, who's the owner, etc */
+
+    // Create the new database entry using the supplied JSON field
+    $ret = $this->prepareExecute($data);
+    $data->id = $this->db->execute('UPDATE '.$this->dbname.'.'.$uid.' SET '.$ret['pairs'].' WHERE mNum=:mNum', (array)$data);
+    return $data;
+  }
+
+  public function del($user, $uid, $opts, $auth, $data) {
+    if(!$auth) throw new ForbiddenException();
+    if(!isset($data)) $data = json_decode('{}');
+    $this->validateUser($user);
+    $this->validateData($data);
+
+    // Sanity check on the incoming request
+    if(!isset($data->mNum)) throw new NotFoundException();
+    $ret = $this->db->all('SELECT mNum FROM '.$this->dbname.'.'.$uid.' WHERE mNum=:mNum', array('mNum' => $data->mNum));
+    if(empty($ret)) throw new NotFoundException();
+
+    /* TODO - Need to verify the OANode settings before updating data, is it public, who's the owner, etc */
+
+    // Delete the node information from the database and remove the data table
+    $this->db->execute('DELETE FROM '.$this->dbname.'.'.$uid.' WHERE mNum=:mNum', array('mNum' => $data->mNum));
+
+    return true;
+  }
+
+  public function validateData($data) {
+  }
+
+  public function validateUser($user) {
+    $ret = $this->db->all('SELECT sUsername FROM OAUserInfo WHERE sUsername=:sUsername', array('sUsername' => $user));
+    if(empty($ret)) throw new NotFoundException();
+  }
+}
+
+
+/* The SLIM application callback for the /{UID}/OANodes/{NID}/data URL */
+$app->map('/v1/:user/OANodes/:uid/data', function($user, $uid = null){
+  $app = Slim::getInstance();
+  $class = 'OAData';
+  try {
+    // Check that class exists
+    if(!class_exists($class)) throw new NotFoundException();
+    // Check that class implements RestApiInterface
+    if(!is_subclass_of($class, 'RestApiInterface')) throw new NotFoundException();
+
+    $class = $class::getInstance();
+    $method = $app->request()->getMethod();
+    $opts = $app->request();  // TODO - This should parse out from /URL/?options component
+
+//    Need to get authentication running at some point
+//    $auth = $app->getEncryptedCookie('auth');
+//    if(in_array($method, array('POST', 'PUT', 'DELETE')) && !$auth) throw new ForbiddenException();
+
+    if($method == 'GET' && $uid != null) $res = $class->all($user, $uid, $opts, '1');
+    else if($method == 'POST' && $uid != null) $res = $class->add($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
+    else if($method == 'PUT' && $uid != null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
+    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else $app->halt(501); // Not implemented
 
     if(empty($res)) throw new NotFoundException();

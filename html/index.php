@@ -67,7 +67,7 @@ abstract class RestApiInterface extends Singleton {
   abstract public function one($user, $uid, $opts, $auth);
   abstract public function add($user, $uid, $opts, $auth, $data);
   abstract public function put($user, $uid, $opts, $auth, $data);
-  abstract public function del($user, $uid, $opts, $auth);
+  abstract public function del($user, $uid, $opts, $auth, $data);
   abstract public function validateData($data);
   abstract public function validateUser($user);
 

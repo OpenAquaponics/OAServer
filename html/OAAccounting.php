@@ -1,15 +1,10 @@
 <?php
 
-/* The class definition for /{UID}/OASystems */
-class OASystems extends RestApiInterface {
-  protected $tbl = 'OASystemCfg';
+/* The class definition for /{UID}/OANodes */
+class OAAccounting extends RestApiInterface {
+  protected $tbl = 'OAAccounting';
 
   public function all($user, $uid, $opts, $auth) {
-    // Example of how to accept incoming optional arguements
-    // http://localhost/index.php/nestinator/OASystems/54FG23?pos[]=23.3&pos[]=34.5
-    //$opts = $app->request();
-    //echo var_dump($opts->get('pos'));
-
     /* PRIVATE - Show all of available systems */
     if($auth) return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername', array('sUsername' => $user));
     /* PUBLIC - Show only the public systems */
@@ -17,67 +12,96 @@ class OASystems extends RestApiInterface {
   }
 
   public function one($user, $uid, $opts, $auth) {
-    $ret = $this->db->all('SELECT bPublic FROM '.$this->tbl.' WHERE sUsername=:sUsername AND sSystemId=:sSystemId', array('sUsername' => $user, 'sSystemId' => $uid));
+    // curl -i -X GET http://localhost/index.php/seperated1/OASystems/44F181DF
+    $ret = $this->db->all('SELECT bPublic FROM '.$this->tbl.' WHERE sUsername=:sUsername AND sNodeId=:sNodeId', array('sUsername' => $user, 'sNodeId' => $uid));
     if($ret[0]->bPublic || $auth)
-      return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername AND sSystemId=:sSystemId', array('sUsername' => $user, 'sSystemId' => $uid));
+      return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername AND sNodeId=:sNodeId', array('sUsername' => $user, 'sNodeId' => $uid));
   }
 
   public function add($user, $uid, $opts, $auth, $data) {
-    // curl -i -X POST -H "Content-Type: application/json" -d "{\"sUsername\": \"nestinator\"}" http://localhost/index.php/nestinator/OASystems
-    if(!$auth) throw new NotFoundException();
+    // Validate the user and incoming data
+    if(!$auth) throw new ForbiddenException();
     if(!isset($data)) $data = json_decode('{}');
     $this->validateUser($user);
     $this->validateData($data);
 
-    // Create a random system ID
+    // Make sure these data fields are present
     $data->sUsername = $user;
-    $data->sSystemId = $this->generateUID($this->tbl, 'sSystemId', 5);
+    $data->sNodeId = $this->generateUID($this->tbl, 'sNodeId', 5);
 
     // Create the new database entry using the supplied JSON field
     $ret = $this->prepareExecute($data);
     $data->id = $this->db->execute('INSERT INTO '.$this->tbl.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data);
+
+    // Create a new table to hold the sampling data
+    // For some reason the database call returns a failure, but it
+    //   performs the operation correctly in the database
+    //   SQLSTATE[HY000]: General error
+    try {
+      $str = 'OAData.'.$data->sNodeId;
+      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mNum INT PRIMARY KEY AUTO_INCREMENT NOT NULL, sData VARCHAR(128))');
+    }
+    catch(Exception $e) {
+    }
+
     return $data;
   }
 
   public function put($user, $uid, $opts, $auth, $data) {
-    if(!$auth) throw new NotFoundException();
+    // Validate the user and incoming data
+    if(!$auth) throw new ForbiddenException();
     if(!isset($data)) $data = json_decode('{}');
     $this->validateUser($user);
     $this->validateData($data);
 
     // Sanity check on the incoming request
-    $ret = $this->db->all('SELECT sUsername FROM OASystemCfg WHERE sSystemId=:sSystemId', array('sSystemId' => $uid));
+    $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
     if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
 
-    if(isset($data->sSystemId)) {
-      if($data->sSystemId != $uid) throw new ValidationException('sSystemId mismatch.');
+    if(isset($data->sNodeId)) {
+      if($data->sNodeId != $uid) throw new ValidationException('sNodeId mismatch.');
     }
 
     // Make sure these data fields are present
     $data->sUsername = $user;
-    $data->sSystemId = $uid;
+    $data->sNodeId = $uid;
 
     // Create the new database entry using the supplied JSON field
     $ret = $this->prepareExecute($data);
-    $data->id = $this->db->execute('UPDATE '.$this->tbl.' SET '.$ret['pairs'].' WHERE sSystemId=:sSystemId', (array)$data);
+    $data->id = $this->db->execute('UPDATE '.$this->tbl.' SET '.$ret['pairs'].' WHERE sNodeId=:sNodeId', (array)$data);
     return $data;
   }
 
-  public function del($user, $uid, $opts, $auth, $del) {
-    if(!$auth) throw new NotFoundException();
+  public function del($user, $uid, $opts, $auth) {
+    if(!$auth) throw new ForbiddenException();
 
-    $ret = $this->db->all('SELECT sUsername FROM OASystemCfg WHERE sSystemId=:sSystemId', array('sSystemId' => $uid));
+    // Make sure $user owns the database row.
+    $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
     if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
 
-    // TODO - Should this just toggle an enable/disable disable field in the database?
-    $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sSystemId=:sSystemId', array('sSystemId' => $uid));
-
-    // TODO - Should also delete the sSystemId's for all of the matching OANodes
+    // Delete the node information from the database and remove the data table
+    $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
+    $this->db->execute('DROP TABLE IF EXISTS OAData.'.$uid);
 
     return true;
   }
 
   public function validateData($data) {
+    if(isset($data->mNumChannels)) {
+      if($data->mNumChannels > 16) throw new ValidationException('mNumChannels cannot exceed 16.');
+      if($data->mNumChannels < 0) throw new ValidationException('mNumChannels cannot be less than 0.');
+    }
+    if(isset($data->sSystemId)) {
+      $ret = $this->db->all('SELECT sSystemId FROM OASystemCfg WHERE sSystemId=:sSystemId', array('sSystemId' => $data->sSystemId));
+      if(empty($ret)) throw new ValidationException('sSystemId needs to be a valid ID.');
+    }
+    if(isset($data->sNodeId)) {
+      $ret = $this->db->all('SELECT sNodeId FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $data->sNodeId));
+      if(empty($ret)) throw new ValidationException('sNodeId needs to be a valid ID.');
+    }
+    if(isset($data->mPollingPeriod)) {
+      if($data->mPollingPeriod < 10) throw new ValidationException('mPollingPeriod time should be greater than 10 seconds.');
+    }
     if(isset($data->bPublic)) {
       if(($data->bPublic != 0) && ($data->bPublic != 1)) throw new ValidationException('bPublic can only be 1 or 0.');
     }
@@ -87,12 +111,13 @@ class OASystems extends RestApiInterface {
     $ret = $this->db->all('SELECT sUsername FROM OAUserInfo WHERE sUsername=:sUsername', array('sUsername' => $user));
     if(empty($ret)) throw new NotFoundException();
   }
+
 }
 
-/* The SLIM application callback for the /{UID}/OASystems URL */
-$app->map('/v1/:user/OASystems(/:uid)', function($user, $uid = null){
+/* The SLIM application callback for the /{UID}/OANodes URL */
+$app->map('/v1/:user/OANodes(/:uid)', function($user, $uid = null){
   $app = Slim::getInstance();
-  $class = 'OASystems';
+  $class = 'OANodes';
   try {
     // Check that class exists
     if(!class_exists($class)) throw new NotFoundException();
@@ -103,7 +128,6 @@ $app->map('/v1/:user/OASystems(/:uid)', function($user, $uid = null){
     $method = $app->request()->getMethod();
     $opts = $app->request();  // TODO - This should parse out from /URL/?options component
 
-
 //    Need to get authentication running at some point
 //    $auth = $app->getEncryptedCookie('auth');
 //    if(in_array($method, array('POST', 'PUT', 'DELETE')) && !$auth) throw new ForbiddenException();
@@ -112,7 +136,7 @@ $app->map('/v1/:user/OASystems(/:uid)', function($user, $uid = null){
     else if($method == 'GET' && $uid != null) $res = $class->one($user, $uid, $opts, '1');
     else if($method == 'POST' && $uid == null) $res = $class->add($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'PUT' && $uid != null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
-    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1', null);
+    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1');
     else $app->halt(501); // Not implemented
 
     if(empty($res)) throw new NotFoundException();
