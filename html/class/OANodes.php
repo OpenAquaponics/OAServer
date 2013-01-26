@@ -39,7 +39,7 @@ class OANodes extends RestApiInterface {
     //   SQLSTATE[HY000]: General error
     try {
       $str = 'OAData.'.$data->sNodeId;
-      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mNum INT PRIMARY KEY AUTO_INCREMENT NOT NULL, sData VARCHAR(128))');
+      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mIdx INT PRIMARY KEY AUTO_INCREMENT NOT NULL UNIQUE, sData VARCHAR(128))');
     }
     catch(Exception $e) {
     }
@@ -116,7 +116,7 @@ class OANodes extends RestApiInterface {
 
 
 /* The SLIM application callback for the /{UID}/OANodes URL */
-$app->map('/v1/:user/OANodes(/(:uid))', function($user, $uid = null){
+$app->map('/v1/:user/OANodes(/(:uid(/)))', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OANodes';
   try {
@@ -171,9 +171,9 @@ class OAData extends RestApiInterface {
     /* TODO - Need to verify the OANode settings before providing data, is it public, who's the owner, etc */
 
     /* PRIVATE - Show all of available systems */
-    if($auth) return $this->db->all('SELECT * FROM '.$this->dbname.'.'.$uid.' ORDER BY mNum DESC LIMIT 32');
+    if($auth) return $this->db->all('SELECT * FROM '.$this->dbname.'.'.$uid.' ORDER BY mIdx DESC LIMIT 32');
     /* PUBLIC - Show only the public systems */
-//    else return $this->db->all('SELECT * FROM '.$db.'.'.$uid.' ORDER BY mNum DESC LIMIT 32 WHERE sUsername=:sUsername AND bPublic=1', array('sUsername' => $user));
+//    else return $this->db->all('SELECT * FROM '.$db.'.'.$uid.' ORDER BY mIdx DESC LIMIT 32 WHERE sUsername=:sUsername AND bPublic=1', array('sUsername' => $user));
   }
 
   public function one($user, $uid, $opts, $auth) {
@@ -184,6 +184,8 @@ class OAData extends RestApiInterface {
     if(!$auth) throw new ForbiddenException();
     if(!isset($data)) throw new NotFoundException();
     $this->validateUser($user);
+
+    if(isset($data->mIdx)) throw new ValidationException('Remove mIdx when creating a new sample.');
 
     // This is a batch transfer of samples
     if(isset($data->batch)) {
@@ -207,15 +209,16 @@ class OAData extends RestApiInterface {
     $this->validateData($data);
 
     // Sanity check on the incoming request
-    if(!isset($data->mNum)) throw new NotFoundException();
-    $ret = $this->db->all('SELECT mNum FROM '.$this->dbname.'.'.$uid.' WHERE mNum=:mNum', array('mNum' => $data->mNum));
+    if(!isset($data->mIdx)) throw new ValidationException('mIdx is required.');
+
+    $ret = $this->db->all('SELECT mIdx FROM '.$this->dbname.'.'.$uid.' WHERE mIdx=:mIdx', array('mIdx' => $data->mIdx));
     if(empty($ret)) throw new NotFoundException();
 
     /* TODO - Need to verify the OANode settings before updating data, is it public, who's the owner, etc */
 
     // Create the new database entry using the supplied JSON field
     $ret = $this->prepareExecute($data);
-    $data->id = $this->db->execute('UPDATE '.$this->dbname.'.'.$uid.' SET '.$ret['pairs'].' WHERE mNum=:mNum', (array)$data);
+    $data->id = $this->db->execute('UPDATE '.$this->dbname.'.'.$uid.' SET '.$ret['pairs'].' WHERE mIdx=:mIdx', (array)$data);
     return $data;
   }
 
@@ -226,14 +229,14 @@ class OAData extends RestApiInterface {
     $this->validateData($data);
 
     // Sanity check on the incoming request
-    if(!isset($data->mNum)) throw new NotFoundException();
-    $ret = $this->db->all('SELECT mNum FROM '.$this->dbname.'.'.$uid.' WHERE mNum=:mNum', array('mNum' => $data->mNum));
+    if(!isset($data->mIdx)) throw new NotFoundException();
+    $ret = $this->db->all('SELECT mIdx FROM '.$this->dbname.'.'.$uid.' WHERE mIdx=:mIdx', array('mIdx' => $data->mIdx));
     if(empty($ret)) throw new NotFoundException();
 
     /* TODO - Need to verify the OANode settings before updating data, is it public, who's the owner, etc */
 
     // Delete the node information from the database and remove the data table
-    $this->db->execute('DELETE FROM '.$this->dbname.'.'.$uid.' WHERE mNum=:mNum', array('mNum' => $data->mNum));
+    $this->db->execute('DELETE FROM '.$this->dbname.'.'.$uid.' WHERE mIdx=:mIdx', array('mIdx' => $data->mIdx));
 
     return true;
   }

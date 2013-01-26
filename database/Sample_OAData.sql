@@ -23,11 +23,11 @@ DROP TABLE IF EXISTS `ER123ER`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ER123ER` (
-  `mNum` int(11) NOT NULL,
+  `mIdx` int(11) NOT NULL AUTO_INCREMENT,
   `mTimeTag` int(11) NOT NULL,
   `sData` varchar(256) DEFAULT NULL,
-  PRIMARY KEY (`mNum`),
-  UNIQUE KEY `mNum` (`mNum`)
+  PRIMARY KEY (`mIdx`),
+  UNIQUE KEY `mIdx` (`mIdx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -49,11 +49,11 @@ DROP TABLE IF EXISTS `FG5T1QR`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `FG5T1QR` (
-  `mNum` int(11) NOT NULL,
+  `mIdx` int(11) NOT NULL AUTO_INCREMENT,
   `mTimeTag` int(11) NOT NULL,
   `sData` varchar(256) DEFAULT NULL,
-  PRIMARY KEY (`mNum`),
-  UNIQUE KEY `mNum` (`mNum`)
+  PRIMARY KEY (`mIdx`),
+  UNIQUE KEY `mIdx` (`mIdx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -75,11 +75,11 @@ DROP TABLE IF EXISTS `UY852RF`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `UY852RF` (
-  `mNum` int(11) NOT NULL,
+  `mIdx` int(11) NOT NULL AUTO_INCREMENT,
   `mTimeTag` int(11) NOT NULL,
   `sData` varchar(256) DEFAULT NULL,
-  PRIMARY KEY (`mNum`),
-  UNIQUE KEY `mNum` (`mNum`)
+  PRIMARY KEY (`mIdx`),
+  UNIQUE KEY `mIdx` (`mIdx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

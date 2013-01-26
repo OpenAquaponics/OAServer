@@ -23,16 +23,17 @@ DROP TABLE IF EXISTS `OAAccounting`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `OAAccounting` (
+  `mIdx` int(11) NOT NULL AUTO_INCREMENT,
   `mCnt` int(11) NOT NULL,
   `sUsername` varchar(32) NOT NULL,
   `sGroupId` varchar(16) DEFAULT NULL,
   `sSystemId` varchar(16) DEFAULT NULL,
   `sNodeId` varchar(16) DEFAULT NULL,
-  `dData` datetime DEFAULT NULL,
+  `dDate` datetime DEFAULT NULL,
   `fAmount` float NOT NULL,
   `sDescription` varchar(256) DEFAULT NULL,
-  PRIMARY KEY (`mCnt`),
-  UNIQUE KEY `mCnt` (`mCnt`)
+  PRIMARY KEY (`mIdx`),
+  UNIQUE KEY `mIdx` (`mIdx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -196,4 +197,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-01-26  7:42:52
+-- Dump completed on 2013-01-26 11:06:12

@@ -7,15 +7,11 @@ class OAAccounting extends RestApiInterface {
   public function all($user, $uid, $opts, $auth) {
     /* PRIVATE - Show all of available systems */
     if($auth) return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername', array('sUsername' => $user));
-    /* PUBLIC - Show only the public systems */
-    else return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername AND bPublic=1', array('sUsername' => $user));
   }
 
   public function one($user, $uid, $opts, $auth) {
     // curl -i -X GET http://localhost/index.php/seperated1/OASystems/44F181DF
-    $ret = $this->db->all('SELECT bPublic FROM '.$this->tbl.' WHERE sUsername=:sUsername AND sNodeId=:sNodeId', array('sUsername' => $user, 'sNodeId' => $uid));
-    if($ret[0]->bPublic || $auth)
-      return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername AND sNodeId=:sNodeId', array('sUsername' => $user, 'sNodeId' => $uid));
+    if($auth) return $this->db->all('SELECT * FROM '.$this->tbl.' WHERE sUsername=:sUsername AND mCnt=:mCnt', array('sUsername' => $user, 'mCnt' => $uid));
   }
 
   public function add($user, $uid, $opts, $auth, $data) {
@@ -27,22 +23,13 @@ class OAAccounting extends RestApiInterface {
 
     // Make sure these data fields are present
     $data->sUsername = $user;
-    $data->sNodeId = $this->generateUID($this->tbl, 'sNodeId', 5);
+    $ret = $this->db->all('SELECT mCnt FROM '.$this->tbl.' WHERE sUsername=:sUsername ORDER BY mCnt DESC LIMIT 1', array('sUsername' => $user));
+    if(empty($ret)) $data->mCnt = 0;
+    else $data->mCnt = $ret[0]->mCnt + 1;
 
     // Create the new database entry using the supplied JSON field
     $ret = $this->prepareExecute($data);
     $data->id = $this->db->execute('INSERT INTO '.$this->tbl.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data);
-
-    // Create a new table to hold the sampling data
-    // For some reason the database call returns a failure, but it
-    //   performs the operation correctly in the database
-    //   SQLSTATE[HY000]: General error
-    try {
-      $str = 'OAData.'.$data->sNodeId;
-      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mNum INT PRIMARY KEY AUTO_INCREMENT NOT NULL, sData VARCHAR(128))');
-    }
-    catch(Exception $e) {
-    }
 
     return $data;
   }
@@ -55,24 +42,20 @@ class OAAccounting extends RestApiInterface {
     $this->validateData($data);
 
     // Sanity check on the incoming request
-    $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
-    if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
-
-    if(isset($data->sNodeId)) {
-      if($data->sNodeId != $uid) throw new ValidationException('sNodeId mismatch.');
-    }
+    $ret = $this->db->all('SELECT mCnt FROM '.$this->tbl.' WHERE sUsername=:sUsername AND mCnt=:mCnt', array('sUsername' => $user, 'mCnt' => $uid));
+    if(empty($ret)) throw new NotFoundException();
 
     // Make sure these data fields are present
     $data->sUsername = $user;
-    $data->sNodeId = $uid;
+    $data->mCnt = $uid;
 
     // Create the new database entry using the supplied JSON field
     $ret = $this->prepareExecute($data);
-    $data->id = $this->db->execute('UPDATE '.$this->tbl.' SET '.$ret['pairs'].' WHERE sNodeId=:sNodeId', (array)$data);
+    $data->id = $this->db->execute('UPDATE '.$this->tbl.' SET '.$ret['pairs'].' WHERE sUsername=:sUsername AND mCnt=:mCnt', (array)$data);
     return $data;
   }
 
-  public function del($user, $uid, $opts, $auth) {
+  public function del($user, $uid, $opts, $auth, $data) {
     if(!$auth) throw new ForbiddenException();
 
     // Make sure $user owns the database row.
@@ -87,23 +70,20 @@ class OAAccounting extends RestApiInterface {
   }
 
   public function validateData($data) {
-    if(isset($data->mNumChannels)) {
-      if($data->mNumChannels > 16) throw new ValidationException('mNumChannels cannot exceed 16.');
-      if($data->mNumChannels < 0) throw new ValidationException('mNumChannels cannot be less than 0.');
+    if(isset($data->mIdx)) {
+      throw new ForbiddenException();
     }
+    if(isset($data->mCnt)) {
+    }
+/*
     if(isset($data->sSystemId)) {
       $ret = $this->db->all('SELECT sSystemId FROM OASystemCfg WHERE sSystemId=:sSystemId', array('sSystemId' => $data->sSystemId));
       if(empty($ret)) throw new ValidationException('sSystemId needs to be a valid ID.');
     }
+*/
     if(isset($data->sNodeId)) {
       $ret = $this->db->all('SELECT sNodeId FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $data->sNodeId));
       if(empty($ret)) throw new ValidationException('sNodeId needs to be a valid ID.');
-    }
-    if(isset($data->mPollingPeriod)) {
-      if($data->mPollingPeriod < 10) throw new ValidationException('mPollingPeriod time should be greater than 10 seconds.');
-    }
-    if(isset($data->bPublic)) {
-      if(($data->bPublic != 0) && ($data->bPublic != 1)) throw new ValidationException('bPublic can only be 1 or 0.');
     }
   }
 
@@ -115,7 +95,7 @@ class OAAccounting extends RestApiInterface {
 }
 
 /* The SLIM application callback for the /{UID}/OANodes URL */
-$app->map('/v1/:user/OAAccounting(/(:uid))', function($user, $uid = null){
+$app->map('/v1/:user/OAAccounting(/(:uid(/)))', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OAAccounting';
   try {
@@ -136,7 +116,7 @@ $app->map('/v1/:user/OAAccounting(/(:uid))', function($user, $uid = null){
     else if($method == 'GET' && $uid != null) $res = $class->one($user, $uid, $opts, '1');
     else if($method == 'POST' && $uid == null) $res = $class->add($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'PUT' && $uid != null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
-    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1');
+    else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1', NULL);
     else $app->halt(501); // Not implemented
 
     if(empty($res)) throw new NotFoundException();
