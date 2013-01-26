@@ -10,6 +10,7 @@ defined('CFGFILE')||define('CFGFILE', 'config.json');
 
 // The OANode.service class (handles sampling, logging, and transmitting data
 class OANodeService {
+  protected $cpid = -1;
   protected $file_cnt = 0;
 
   public function sendJSON($path, $data_string) {
@@ -25,17 +26,17 @@ class OANodeService {
   }
 
   public function run() {
-    $cfg  = json_decode(file_get_contents(CFGPATH.CFGFILE));
+    $this->cfg  = json_decode(file_get_contents(CFGPATH.CFGFILE));
     $outfile_name = '';
  
     // Make sure the required fields are included
-    if(!isset($cfg->sUsername)) {
+    if(!isset($this->cfg->sUsername)) {
       print 'sUsername required'; exit(1);
     }
-    if(!isset($cfg->sNodeId)) {
+    if(!isset($this->cfg->sNodeId)) {
       print 'sNodeId required'; exit(1);
     }
-    if(!isset($cfg->mPollingPeriod)) {
+    if(!isset($this->cfg->mPollingPeriod)) {
       print 'mPollingPeriod required'; exit(1);
     }
  
@@ -51,7 +52,7 @@ class OANodeService {
       $data_string = json_encode(array("sData" => implode($data, ',')));
  
       // Build and send the data packet over the network
-      $ret = $this->sendJSON('http://localhost/index.php/v1/'.$cfg->sUsername.'/OANodes/'.$cfg->sNodeId.'/data', $data_string);
+      $ret = $this->sendJSON('http://localhost/index.php/v1/'.$this->cfg->sUsername.'/OANodes/'.$this->cfg->sNodeId.'/data', $data_string);
  
       // Network failed or unavailable, save to disk for transfer later
       if(empty($ret)) {
@@ -62,33 +63,59 @@ class OANodeService {
         }
       }
       else {
-        // Check to see if there is data needed to be written to the server now that there is a connection
-        // NOTE: I really hope this spawns a true new 'process' so there will be no conflicts with data members in the class
+        // Check to see if there is data that needs to be written to the server
         $this->sendPendingTransfers();
       }
  
       // Compensate for the execution time when computing the timeout period
-      usleep(($cfg->mPollingPeriod - (microtime(true) - $start_time)) * 1000000);
+      usleep(($this->cfg->mPollingPeriod - (microtime(true) - $start_time)) * 1000000);
     }
   }
 
   public function sendPendingTransfers() {
-    $files = scandir(SERVICEPATH.'data', 1);
-    // This is a race condition waiting to happen.  Think it through
-    if(count($files) > 2) {
-      // Skip files: '.' and '..'
+    // There is a child process running, monitor its status
+    if($this->cpid > 0) {
+      if($this->cpid == pcntl_waitpid(-1, $stat, WNOHANG)) {
+        $this->cpid = -1;
+      }
+      // TODO - Add a high level monitor to automatically kill process after 10 min
+      //   This could stop zombie tasks when I have an unexpected/unhandled error
+      //   occur in the child task.
     }
-    else {
-      $this->file_cnt = 0;
+
+    // There is no child process running, you can safely spawn a new one
+    if($this->cpid <= 0) {
+      $files = scandir(SERVICEPATH.'data', 1);
+      if(count($files) > 2) {
+        if(($this->cpid = pcntl_fork()) == 0) {
+          $this->uploadData($files);
+        }
+        $this->file_cnt++;
+      }
+      else {
+        $this->file_cnt = 0;
+      }
     }
   }
 
-  public function uploadData() {
-    //////////////////////
-    // TODO - Make the server support multiple rows in a single JSON object
-    //////////////////////
+  public function uploadData($files) {
+    // Skip files: '.' and '..'
+    for($i = 0; $i < (count($files) - 2); $i++) {
+      // TODO - There needs to be a better verification than seeing data was returned.
+      // TODO - The server should return the number of objects in the "batch" or something
+      // TODO - There needs to be better error handling
 
+      $filename = SERVICEPATH.'data/'.$files[$i];
 
+      // Build the JSON string
+      $data_string = '{"batch":['.substr_replace(str_replace("\n", ",", file_get_contents($filename)), "", -1).']}';
+
+      $ret = $this->sendJSON('http://localhost/index.php/v1/'.$this->cfg->sUsername.'/OANodes/'.$this->cfg->sNodeId.'/data', $data_string);
+      if(!empty($ret)) {
+        unlink($filename);
+      }
+    }
+    exit(0);
   }
 
 }
