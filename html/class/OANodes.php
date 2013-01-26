@@ -182,15 +182,19 @@ class OAData extends RestApiInterface {
   public function add($user, $uid, $opts, $auth, $data) {
     // Validate the user and incoming data
     if(!$auth) throw new ForbiddenException();
-    if(!isset($data)) $data = json_decode('{}');
+    if(!isset($data)) throw new NotFoundException();
     $this->validateUser($user);
-    $this->validateData($data);
 
-    /* TODO - Need to verify the OANode settings before saving data, is it public, who's the owner, etc */
-
-    // Create the new database entry using the supplied JSON field
-    $ret = $this->prepareExecute($data);
-    $data->id = $this->db->execute('INSERT INTO '.$this->dbname.'.'.$uid.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data);
+    // This is a batch transfer of samples
+    if(isset($data->batch)) {
+      for($i = 0; $i < count($data->batch); $i++) {
+        $this->postSample($uid, $data->batch[$i]);
+      }
+    }
+    // This is a single sample
+    else {
+      $this->postSample($uid, $data);
+    }
 
     return $data;
   }
@@ -241,6 +245,16 @@ class OAData extends RestApiInterface {
     $ret = $this->db->all('SELECT sUsername FROM OAUserInfo WHERE sUsername=:sUsername', array('sUsername' => $user));
     if(empty($ret)) throw new NotFoundException();
   }
+
+  public function postSample($uid, $data) {
+    $this->validateData($data);
+
+    /* TODO - Need to verify the OANode settings before saving data, is it public, who's the owner, etc */
+
+    // Create the new database entry using the supplied JSON field
+    $ret = $this->prepareExecute($data);
+    return($this->db->execute('INSERT INTO '.$this->dbname.'.'.$uid.' ('.$ret['cols'].') VALUES ('.$ret['vals'].')', (array)$data));
+  }
 }
 
 
@@ -267,6 +281,7 @@ $app->map('/v1/:user/OANodes/:uid/data', function($user, $uid = null){
     else if($method == 'PUT' && $uid != null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else $app->halt(501); // Not implemented
+
 
     if(empty($res)) throw new NotFoundException();
 

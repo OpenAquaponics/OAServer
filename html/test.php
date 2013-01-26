@@ -3,13 +3,6 @@
 
 class Test {
   protected $json = '{"sUsername":"nestinator","sSystemId":"SD234JUS","mNumNodes":3,"bPublic":0,"sDescription":"Testing the application"}';
-  protected $arr  = array(
-    'sUsername' => 'nestinator',
-    'sSystemId' => 'SD234JUS',
-    'mNumNodes' => 3,
-    'bPublic' => 0,
-    'sDescription' => 'Testing the application'
-  );
 
   public function process() {
     $data = json_decode($this->json);
@@ -23,7 +16,14 @@ class Test {
     //$ret = $this->prepareExecute(get_object_vars($data));
     $ret = $this->prepareExecute((array)$data);
     echo 'INSERT INTO OASystemCfg ('.$ret['cols'].') VALUES ('.$ret['vals'].')';
+    echo '<br><br>';
     
+    echo count($data);
+    $json1 = '{"batch":[{"sUsername":"nestinator","sSystemId":"SD234JUS","mNumNodes":3,"bPublic":0,"sDescription":"Testing the application"},{"sUsername":"nestinator","sSystemId":"SD234JUS","mNumNodes":3,"bPublic":0,"sDescription":"Testing the application"},{"sUsername":"nestinator","sSystemId":"SD234JUS","mNumNodes":3,"bPublic":0,"sDescription":"Testing the application"}]}';
+//    $data = json_decode('{'.$this->json.','$this->json.','$this->json.'}');
+    $data = json_decode($json1);
+    echo '    '.count($data->batch).'<br>';
+    echo $json1;
   }
 
   public function validateData($data) {
