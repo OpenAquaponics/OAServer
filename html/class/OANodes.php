@@ -116,7 +116,7 @@ class OANodes extends RestApiInterface {
 
 
 /* The SLIM application callback for the /{UID}/OANodes URL */
-$app->map('/v1/:user/OANodes(/:uid)', function($user, $uid = null){
+$app->map('/v1/:user/OANodes(/(:uid))', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OANodes';
   try {
@@ -259,7 +259,7 @@ class OAData extends RestApiInterface {
 
 
 /* The SLIM application callback for the /{UID}/OANodes/{NID}/data URL */
-$app->map('/v1/:user/OANodes/:uid/data', function($user, $uid = null){
+$app->map('/v1/:user/OANodes/:uid/data(/)', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OAData';
   try {

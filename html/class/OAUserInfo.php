@@ -85,7 +85,7 @@ class OAUserInfo extends RestApiInterface {
 
 
 /* The SLIM application callback for the /{UID}/OAUserInfo URL */
-$app->map('/v1/:user/OAUser', function($user, $uid = null){
+$app->map('/v1/:user/OAUser(/)', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OAUserInfo';
   try {

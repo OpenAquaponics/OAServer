@@ -115,7 +115,7 @@ class OAAccounting extends RestApiInterface {
 }
 
 /* The SLIM application callback for the /{UID}/OANodes URL */
-$app->map('/v1/:user/OAAccounting(/:uid)', function($user, $uid = null){
+$app->map('/v1/:user/OAAccounting(/(:uid))', function($user, $uid = null){
   $app = Slim::getInstance();
   $class = 'OAAccounting';
   try {
