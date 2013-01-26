@@ -66,6 +66,7 @@ CREATE TABLE `OAGroup` (
 
 LOCK TABLES `OAGroup` WRITE;
 /*!40000 ALTER TABLE `OAGroup` DISABLE KEYS */;
+INSERT INTO `OAGroup` VALUES ('5TGY64','Local aquaponics grows');
 /*!40000 ALTER TABLE `OAGroup` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -97,6 +98,7 @@ CREATE TABLE `OANodeCfg` (
 
 LOCK TABLES `OANodeCfg` WRITE;
 /*!40000 ALTER TABLE `OANodeCfg` DISABLE KEYS */;
+INSERT INTO `OANodeCfg` VALUES ('nestinator','IK89EQ2','ER123ER','Water Level,Air Temp,Water Temp','mm,F,F',10,'The indoor fish tank',1,1),('nestinator','IK89EQ2','FG5T1QR','Water Level,Air Temp,Water Temp','mm,F,F',10,'The outdoor balcony system',1,1),('nestinator','IK89EQ2','UY852RF','Water Level,Air Temp,Water Temp','mm,F,F',10,'The commerical system',1,1);
 /*!40000 ALTER TABLE `OANodeCfg` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -125,6 +127,7 @@ CREATE TABLE `OASystemCfg` (
 
 LOCK TABLES `OASystemCfg` WRITE;
 /*!40000 ALTER TABLE `OASystemCfg` DISABLE KEYS */;
+INSERT INTO `OASystemCfg` VALUES ('nestinator','IK89EQ2','5TGY64','My first aquaponics system',1,1);
 /*!40000 ALTER TABLE `OASystemCfg` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -160,6 +163,7 @@ CREATE TABLE `OAUserInfo` (
 
 LOCK TABLES `OAUserInfo` WRITE;
 /*!40000 ALTER TABLE `OAUserInfo` DISABLE KEYS */;
+INSERT INTO `OAUserInfo` VALUES ('nestinator','email@mailinator.com','Hello','World','123 Road','','Boston','MA','12345','345-321-5676',1,1);
 /*!40000 ALTER TABLE `OAUserInfo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -184,6 +188,7 @@ CREATE TABLE `OAUserPass` (
 
 LOCK TABLES `OAUserPass` WRITE;
 /*!40000 ALTER TABLE `OAUserPass` DISABLE KEYS */;
+INSERT INTO `OAUserPass` VALUES ('nestinator','AWESOMEHASH');
 /*!40000 ALTER TABLE `OAUserPass` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -196,4 +201,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-01-26  7:42:52
+-- Dump completed on 2013-01-26  9:22:08
