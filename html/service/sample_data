@@ -1,2 +1,2 @@
 #!/bin/bash
-php /var/www/html/cron.php;
+php /var/www/html/service/cron.php;

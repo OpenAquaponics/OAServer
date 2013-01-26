@@ -4,7 +4,7 @@ After=
 
 [Service]
 Type=simple
-ExecStart=/var/www/html/sample_data
+ExecStart=/var/www/html/service/sample_data
 
 [Install]
 WantedBy=multi-user.target
