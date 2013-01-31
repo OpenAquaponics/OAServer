@@ -61,11 +61,17 @@ int EthernetList::AddSocket(SOCKET_TYPE_e mSockType, Socket_t mNewSock) {
 /* TODO - This function could be optimized better for speed */
 int EthernetList::RemoveSocket(int mFd) {
 /****************************************/
+
+  /* INFO: Interesting note is that you have to assign the
+      iterator when performing an erase and you shouldn't increment
+      everytime like a normal for loop. Still don't know why exactly. */
+
   /* Traverse the vector to find the matching fd */
-  for(std::vector< boost::shared_ptr<Ethernet> >::iterator pIter = vpSockList.begin(); pIter != vpSockList.end(); pIter++) {
+  for(std::vector< boost::shared_ptr<Ethernet> >::iterator pIter = vpSockList.begin(); pIter != vpSockList.end(); ) {
     /* Found the matching socket */
     if((*pIter).get()->GetSocketFd() == mFd) {
-      vpSockList.erase(pIter);
+
+      pIter = vpSockList.erase(pIter);
 
       /* Reset the select variables */
       FD_ZERO(&mListFds);
@@ -74,6 +80,9 @@ int EthernetList::RemoveSocket(int mFd) {
       }
 
       return(0);
+    }
+    else {
+      pIter++;
     }
   }
 

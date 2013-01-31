@@ -13,6 +13,8 @@ void HandlerThread::Init(void) {
   /* Initialize Variables */
   mThreadPriority = 0;
   mThreadPID = 0;
+
+  pDb = new Database((char*)"./OAServer.sqlite");
 }
 
 
@@ -30,7 +32,7 @@ HandlerThread::HandlerThread(void) : EthernetList() {
 /****************************************/
 HandlerThread::~HandlerThread(void) {
 /****************************************/
-
+  delete pDb;
 }
 
 
@@ -43,19 +45,24 @@ void* HandlerThread::Run(void *pParam) {
 
   while(1) {
     pHandle->PollSocketList();
+    pHandle->UpdateThreadPriority();
   }
 
 }
 
 
 /****************************************/
+int HandlerThread::UpdateThreadPriority(void) {
+/****************************************/
+  SetThreadPriority(EthernetList::GetSocketListSize());
+}
+
+
+/****************************************/
 int HandlerThread::AddSocket(SOCKET_TYPE_e mSockType, Socket_t mSock) {
 /****************************************/
-  printf("(%d)\n", EthernetList::GetSocketListSize());
   EthernetList::AddSocket(mSockType, mSock);
-
-  SetThreadPriority(EthernetList::GetSocketListSize());
-  printf("  %u -> %d  (%d)\n", GetThreadPID(), GetThreadPriority(), EthernetList::GetSocketListSize());
+  UpdateThreadPriority();
   return(0);
 }
 
@@ -65,59 +72,48 @@ int HandlerThread::ProcessData(Ethernet *pSock) {
 /****************************************/
   /* Variable Declaration */
   int mRetVal = 0;
-  int s = pSock->GetSocketFd();
-  char buff[1000];
+  static PacketHeader_t mHdr;
+  static unsigned char mBuff[1024];
+  unsigned char *pData = mBuff;
 
-  /* Recv the data from the socket */
-    /* Remove back sockets */
-  /* Parse request */
-  /* Write/Read from DB */
-
-  /* Check the make sure the stream is not closed */
-  if((mRetVal = recv(s, buff, 1, MSG_PEEK)) == 0) {
+  /* Check if the client disconnected */
+  if((mRetVal = pSock->Peek()) == 0) {
     /* Somebody disconnected, get details and close */
-    printf("INFO: Host disconnecting socket: %d\n", s);
-    RemoveSocket(s);
-  }
-  /* Process the incoming data */
-  else if(mRetVal == 1) {
-    printf("Processing data from: %d\n", s);
-    if((mRetVal = read(s, buff, sizeof(buff))) > 0) { printf("  Got %d bytes\n", mRetVal); };
+    printf("INFO: Host disconnecting socket: %d\n", pSock->GetSocketFd());
+    RemoveSocket(pSock->GetSocketFd());
+    return(0);
   }
 
+  /* Verify the sync packet is at the beginning of the buffer and then process the data */
+  if((pSock->Seek(SYNC, 50)) &&
+     (mRetVal = pSock->Recv((unsigned char*)&mHdr, sizeof(mHdr))) == sizeof(mHdr)) {
+    /* Determine if more memory is needed */
+    if((sizeof(mHdr) + mHdr.mNumBytes) > sizeof(mBuff)) {
+      pData = (unsigned char*)malloc(sizeof(mHdr) + mHdr.mNumBytes);
+    }
 
-#if 0
-  /* TODO - Need to figure out how to get the Recv/Xmit socket stuff properly encapulated */
-  /* Check the make sure the stream is not closed */
-  if((mRetVal = recv(s, &mPktHdr, sizeof(mPktHdr), MSG_PEEK)) == 0) {
-    /* Somebody disconnected , get his details and print */
-    getpeername(s, (struct sockaddr*)&mClientSock[i].mAddr, (socklen_t*)&mClientSock[i].mAddrLen);
-    printf("INFO: Host disconnected  %s:%d\n", inet_ntoa(mClientSock[i].mAddr.sin_addr) , ntohs(mClientSock[i].mAddr.sin_port));
-
-    /* Close the socket and mark as 0 in list for reuse */
-    close(s);
-    memset(&mClientSock[i], 0, sizeof(Socket_t));
-  }
-  /* Process the incoming data */
-  /* TODO - This needs to have a functional callback, inherited method, or msq in order to send data to processing task */
-  /* Verify the entire packet is on the buffer before attempting to process it.
-     The arduino write() sends each packet individually.
-     TODO - This will need to change. */
-  else if((mRetVal == sizeof(mPktHdr)) && 
-          ((mRetVal = recv(s, eof, sizeof(mPktHdr) + mPktHdr.mNumBytes, MSG_PEEK)) >= sizeof(mPktHdr) + mPktHdr.mNumBytes)) {
-    if((mRetVal = read(s , &mPktHdr, sizeof(mPktHdr))) == sizeof(mPktHdr)) {
-      ClearPacket();
-      if((pData = (unsigned char*)malloc(sizeof(mPktHdr) + mPktHdr.mNumBytes)) != NULL) {
-        memcpy(pData, &mPktHdr, sizeof(mPktHdr));
-        if((mRetVal = read(s, (void*)&pData[sizeof(mPktHdr)], mPktHdr.mNumBytes)) != mPktHdr.mNumBytes) {
-          printf("ERR:  Error reading socket data\n");
-          ClearPacket();
-        }
+    /* If the buffer pointer is valid, then read away */
+    if(pData) {
+      memcpy(pData, &mHdr, sizeof(mHdr));
+      if((mRetVal = pSock->Recv((unsigned char*)&pData[sizeof(mHdr)], mHdr.mNumBytes)) != mHdr.mNumBytes) {
+        /* TODO - Should you request more data, or just assume it's gone? */
+        printf("ERR:  Error reading socket data (%d of %d)\n", mRetVal, mHdr.mNumBytes);
+      }
+      else {
+        ProcessPacket(pData);
       }
     }
   }
-#endif
+  else {
+    printf("ERR: Read %d bytes of %d\n", mRetVal, sizeof(mHdr));
+  }
 
+  /* Free memory if it was allocated */
+  if((pData != mBuff) && (pData)) {
+    free(pData);
+  }
+
+  return(0);
 }
 
 

@@ -39,4 +39,7 @@ CPP_COMP_FLAGS = $(CPP_COMP_WARN_FLAGS) $(COMP_OPTIMIZE_FLAGS) \
 LIB_SERIAL   = -lserial
 LIB_ETHERNET = -lethernet
 LIB_DATABASE = -ldatabase -lsqlite3
+LIB_UTIL     = -lutil
+LIB_JSON     = -ljson_linux-gcc-4.7.2_libmt
+
 

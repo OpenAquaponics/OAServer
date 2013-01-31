@@ -17,6 +17,7 @@
 #include "common_types.h"
 
 /* defines */
+#define SYNC  (0xCABE)
 
 /* enums */
 typedef enum {
@@ -41,7 +42,7 @@ typedef struct {
   int mTimeTagSec;  /* NTP(?) time in secs */
   int mDeviceId;
   int mMsgType;
-  int mCheckSum;    /* Checksum of just payload */
+  int mChecksum;    /* Checksum of just payload */
 } PacketHeader_t;
 
 typedef struct {

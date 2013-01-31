@@ -26,6 +26,7 @@ it_all:
 	@echo "        Making the entire ${PROJECT_NAME} project"
 	(cd ./common;          make -s it_all)
 	(cd ./src;             make -s it_all)
+	(cd ./unittest;        make -s it_all)
 
 clean:
 	@echo " "
@@ -34,6 +35,7 @@ clean:
 	@echo "        Cleaning the entire ${PROJECT_NAME} project"
 	(cd ./common;          make -s clean)
 	(cd ./src;             make -s clean)
+	(cd ./unittest;        make -s clean)
 
 from_scratch:
 	@echo " "
@@ -42,3 +44,4 @@ from_scratch:
 	@echo "        Building from scratch the entire ${PROJECT_NAME} project"
 	(cd ./common;          make -s from_scratch)
 	(cd ./src;             make -s from_scratch)
+	(cd ./unittest;        make -s from_scratch)

@@ -49,19 +49,19 @@ clean_lib:
 
 # 'make it_all' target
 it_all:
-	@echo " "
-	@echo "         Making ${LIB_NAME} lib"
+	echo " "
+	echo "         Making ${LIB_NAME} lib"
 	make -s
-	@echo "         Installing ${LIB_NAME} lib"
+	echo "         Installing ${LIB_NAME} lib"
 	make -s install
 
 # 'make from_scratch' target
 from_scratch:
-	@echo " "
-	@echo "         Cleaning Up ${LIB_NAME} libs/obs"
+	echo " "
+	echo "         Cleaning Up ${LIB_NAME} libs/obs"
 	make -s clean
 	make -s clean_lib
-	@echo "         Making ${LIB_NAME} lib"
+	echo "         Making ${LIB_NAME} lib"
 	make -s
-	@echo "         Installing ${LIB_NAME} lib"
+	echo "         Installing ${LIB_NAME} lib"
 	make -s install

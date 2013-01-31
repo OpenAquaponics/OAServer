@@ -7,7 +7,7 @@ ROOT_SRC_PATH = ../..
 include ${ROOT_SRC_PATH}/root_make.rules
 
 # Library name
-LIB_NAME = "ETHERNET"
+LIB_NAME = "UTILITIES"
 
 # Headers files needed for the compile/linking phase
 ALL_INCL_PATHS  = -I${ROOT_INCL_PATH}
@@ -15,11 +15,11 @@ ALL_INCL_PATHS  = -I${ROOT_INCL_PATH}
 # Files to be compiled by the makefile
 SRCS_C   = 
 OBJS_C   = $(patsubst %.c,%.c.o,${SRCS_C})
-SRCS_CPP = EthernetUtil.cpp EthernetList.cpp Ethernet.cpp
+SRCS_CPP = Util.cpp
 OBJS_CPP = $(patsubst %.cpp,%.cpp.o,${SRCS_CPP})
 
 # Name of the library file to be created
-TARGETS=libethernet.a
+TARGETS=libutil.a
 
 # 'make all' target
 all: $(TARGETS)
@@ -31,12 +31,12 @@ ${OBJS_CPP} : ${SRCS_CPP} ./Makefile
 	${G++} -c ${ALL_INCL_PATHS} $* -o $*.o
 
 # 'make' target
-libethernet.a: ${OBJS_C} ${OBJS_CPP} ${SRCS_C} ${SRCS_CPP} ./Makefile
-	ar -rv libethernet.a ${OBJS_C} ${OBJS_CPP}
+libutil.a: ${OBJS_C} ${OBJS_CPP} ${SRCS_C} ${SRCS_CPP} ./Makefile
+	ar -rv libutil.a ${OBJS_C} ${OBJS_CPP}
 
 # 'make install' target
 install:
-	cp ./libethernet.a ${ROOT_LIB_PATH}
+	cp ./libutil.a ${ROOT_LIB_PATH}
 
 # 'make clean' target
 clean:
