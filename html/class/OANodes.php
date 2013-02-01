@@ -39,7 +39,7 @@ class OANodes extends RestApiInterface {
     //   SQLSTATE[HY000]: General error
     try {
       $str = 'OAData.'.$data->sNodeId;
-      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mIdx INT PRIMARY KEY AUTO_INCREMENT NOT NULL UNIQUE, sData VARCHAR(128))');
+      $data->tbl = $this->db->all('CREATE TABLE IF NOT EXISTS '.$str.' (mIdx INT PRIMARY KEY AUTO_INCREMENT NOT NULL UNIQUE, mTimeTag INT NOT NULL, sData VARCHAR(128))');
     }
     catch(Exception $e) {
     }

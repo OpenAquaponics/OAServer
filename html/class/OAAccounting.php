@@ -59,12 +59,11 @@ class OAAccounting extends RestApiInterface {
     if(!$auth) throw new ForbiddenException();
 
     // Make sure $user owns the database row.
-    $ret = $this->db->all('SELECT sUsername FROM OANodeCfg WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
+    $ret = $this->db->all('SELECT sUsername FROM '.$this->tbl.' WHERE sUsername=:sUsername AND mCnt=:mCnt', array('sUsername' => $user, 'mCnt' => $uid));
     if(empty($ret) || ($ret[0]->sUsername != $user)) throw new ForbiddenException();
 
     // Delete the node information from the database and remove the data table
-    $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sNodeId=:sNodeId', array('sNodeId' => $uid));
-    $this->db->execute('DROP TABLE IF EXISTS OAData.'.$uid);
+    $this->db->execute('DELETE FROM '.$this->tbl.' WHERE sUsername=:sUsername AND mCnt=:mCnt', array('sUsername' => $user, 'mCnt' => $uid));
 
     return true;
   }
