@@ -4,6 +4,7 @@ import os;
 import getpass;
 import subprocess;
 import argparse;
+import random;
 
 
 def main(**kwargs):
@@ -23,25 +24,19 @@ def main(**kwargs):
     if(ret) :
       exit(1);
 
-  print "---------------\nCreating new OAUser"
+  print "---------------\nCreating new OASystem"
 
-  OAUserInfo = {};
-  OAUserInfo["sUsername"]  = str(raw_input("  Enter Username   (REQUIRED): "));
-  OAUserInfo["sEmail"]     = str(raw_input("  Enter Email      (REQUIRED): "));
-  OAUserInfo["sFirstName"] = str(raw_input("  Enter First Name (REQUIRED): "));
-  OAUserInfo["sLastName"]  = str(raw_input("  Enter Last Name  (OPTIONAL): "));
-  OAUserInfo["sAddress"]   = str(raw_input("  Enter Address    (OPTIONAL): "));
-  OAUserInfo["sAddress2"]  = str(raw_input("  Enter Address(2) (OPTIONAL): "));
-  OAUserInfo["sCity"]      = str(raw_input("  Enter City       (OPTIONAL): "));
-  OAUserInfo["sState"]     = str(raw_input("  Enter State      (OPTIONAL): "));
-  OAUserInfo["sZip"]       = str(raw_input("  Enter Zip        (OPTIONAL): "));
-  OAUserInfo["sPhone"]     = str(raw_input("  Enter Phone      (OPTIONAL): "));
-  OAUserInfo["bPublic"]    = str("1"); # Make this a validated input
-  OAUserInfo["bEnable"]    = str("1"); # Make this a validated input
+  OASystemCfg = {};
+  OASystemCfg["sUsername"]    = str(raw_input("  Enter Username    (REQUIRED): "));
+  OASystemCfg["sDescription"] = str(raw_input("  Enter Description (OPTIONAL): "));
+  OASystemCfg["sSystemId"]    = str("%X" % (random.randrange(0, 0xFFFFFFFF)));
+  OASystemCfg["sGroupId"]     = str("");
+  OASystemCfg["bPublic"]      = str("1"); # Make this a validated input
+  OASystemCfg["bEnable"]      = str("1"); # Make this a validated input
 
   key_str = '';
   val_str = '';
-  for key, val in OAUserInfo.iteritems():
+  for key, val in OASystemCfg.iteritems():
     if(len(val) > 0):
       key_str = key_str + key + ',';
       val_str = val_str + '"' + val + '",';
@@ -52,10 +47,10 @@ def main(**kwargs):
   key_str = key_str[:-1];
   val_str = val_str[:-1];
 
-  print "  -- Attempting to create OAUser: %s --" % (OAUserInfo["sUsername"]);
+  print "  -- Attempting to create OASystem: %s --" % (OASystemCfg["sSystemId"]);
 
   with open(os.devnull,"w") as fnull:
-    cmd = "mysql -u %s --password=%s -e 'INSERT INTO OAServer.OAUserInfo (%s) VALUES (%s)'" % (username, password, key_str, val_str);
+    cmd = "mysql -u %s --password=%s -e 'INSERT INTO OAServer.OASystemCfg (%s) VALUES (%s)'" % (username, password, key_str, val_str);
     ret = subprocess.call(cmd, shell = True, stdout = fnull);
 
 

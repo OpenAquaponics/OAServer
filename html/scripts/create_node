@@ -4,6 +4,7 @@ import os;
 import getpass;
 import subprocess;
 import argparse;
+import random;
 
 
 def main(**kwargs):
@@ -23,25 +24,22 @@ def main(**kwargs):
     if(ret) :
       exit(1);
 
-  print "---------------\nCreating new OAUser"
+  print "---------------\nCreating new OANode"
 
-  OAUserInfo = {};
-  OAUserInfo["sUsername"]  = str(raw_input("  Enter Username   (REQUIRED): "));
-  OAUserInfo["sEmail"]     = str(raw_input("  Enter Email      (REQUIRED): "));
-  OAUserInfo["sFirstName"] = str(raw_input("  Enter First Name (REQUIRED): "));
-  OAUserInfo["sLastName"]  = str(raw_input("  Enter Last Name  (OPTIONAL): "));
-  OAUserInfo["sAddress"]   = str(raw_input("  Enter Address    (OPTIONAL): "));
-  OAUserInfo["sAddress2"]  = str(raw_input("  Enter Address(2) (OPTIONAL): "));
-  OAUserInfo["sCity"]      = str(raw_input("  Enter City       (OPTIONAL): "));
-  OAUserInfo["sState"]     = str(raw_input("  Enter State      (OPTIONAL): "));
-  OAUserInfo["sZip"]       = str(raw_input("  Enter Zip        (OPTIONAL): "));
-  OAUserInfo["sPhone"]     = str(raw_input("  Enter Phone      (OPTIONAL): "));
-  OAUserInfo["bPublic"]    = str("1"); # Make this a validated input
-  OAUserInfo["bEnable"]    = str("1"); # Make this a validated input
+  OANodeCfg = {};
+  OANodeCfg["sUsername"]      = str(raw_input("  Enter Username              (REQUIRED): "));
+  OANodeCfg["sSystemId"]      = str(raw_input("  Enter SystemId              (REQUIRED): "));
+  OANodeCfg["mPollingPeriod"] = str(raw_input("  Enter Polling Period (secs) (REQUIRED): "));
+  OANodeCfg["sNodeId"]        = str("%X" % (random.randrange(0, 0xFFFFFFFF)));
+  OANodeCfg["sChannelNames"]  = str(raw_input("  Enter Channel Names         (OPTIONAL): "));
+  OANodeCfg["sChannelUnits"]  = str(raw_input("  Enter Channel Units         (OPTIONAL): "));
+  OANodeCfg["sDescription"]   = str(raw_input("  Enter Description           (OPTIONAL): "));
+  OANodeCfg["bPublic"]        = str("1"); # Make this a validated input
+  OANodeCfg["bEnable"]        = str("1"); # Make this a validated input
 
   key_str = '';
   val_str = '';
-  for key, val in OAUserInfo.iteritems():
+  for key, val in OANodeCfg.iteritems():
     if(len(val) > 0):
       key_str = key_str + key + ',';
       val_str = val_str + '"' + val + '",';
@@ -52,12 +50,13 @@ def main(**kwargs):
   key_str = key_str[:-1];
   val_str = val_str[:-1];
 
-  print "  -- Attempting to create OAUser: %s --" % (OAUserInfo["sUsername"]);
+  print "  -- Attempting to create OANode: %s --" % (OANodeCfg["sNodeId"]);
 
   with open(os.devnull,"w") as fnull:
-    cmd = "mysql -u %s --password=%s -e 'INSERT INTO OAServer.OAUserInfo (%s) VALUES (%s)'" % (username, password, key_str, val_str);
+    cmd = "mysql -u %s --password=%s -e 'INSERT INTO OAServer.OANodeCfg (%s) VALUES (%s)'" % (username, password, key_str, val_str);
     ret = subprocess.call(cmd, shell = True, stdout = fnull);
-
+    cmd = "mysql -u %s --password=%s -e 'CREATE TABLE IF NOT EXISTS 'OAData.%s' (mIdx INT PRIMARY KEY AUTO_INCREMENT NOT NULL UNIQUE, mTimeTag INT NOT NULL, sData VARCHAR(128))'" % (username, password, OANodeCfg["sNodeId"]);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description = "Create a user in the database", version = "%(prog)s 1.0");

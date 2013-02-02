@@ -39,6 +39,10 @@ def main(**kwargs):
   while(c < 4):
     if(c == 1):
       os.system("./create_user -u %s -p %s" % (username, password));
+    elif(c == 2):
+      os.system("./create_system -u %s -p %s" % (username, password));
+    elif(c == 3):
+      os.system("./create_node -u %s -p %s" % (username, password));
     else:
       pass
 
