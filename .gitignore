@@ -3,5 +3,6 @@
 *.o
 *.a
 a.out
+/database/backup
 # Except this file
 !.gitignore

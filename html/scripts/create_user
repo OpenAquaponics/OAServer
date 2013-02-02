@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import os;
+
+OAUserInfo = {};
+
+print "---------------\nCreating new user"
+OAUserInfo["sUsername"]  = str(raw_input("  Enter Username   (REQUIRED): "));
+OAUserInfo["sEmail"]     = str(raw_input("  Enter Email      (REQUIRED): "));
+OAUserInfo["sFirstName"] = str(raw_input("  Enter First Name (REQUIRED): "));
+OAUserInfo["sLastName"]  = str(raw_input("  Enter Last Name  (OPTIONAL): "));
+OAUserInfo["sAddress"]   = str(raw_input("  Enter Address    (OPTIONAL): "));
+OAUserInfo["sAddress2"]  = str(raw_input("  Enter Address(2) (OPTIONAL): "));
+OAUserInfo["sCity"]      = str(raw_input("  Enter City       (OPTIONAL): "));
+OAUserInfo["sState"]     = str(raw_input("  Enter State      (OPTIONAL): "));
+OAUserInfo["sZip"]       = str(raw_input("  Enter Zip        (OPTIONAL): "));
+OAUserInfo["sPhone"]     = str(raw_input("  Enter Phone      (OPTIONAL): "));
+OAUserInfo["bPublic"]    = str("1"); # Make this a validated input
+OAUserInfo["bEnable"]    = str("1"); # Make this a validated input
+
+print OAUserInfo;
