@@ -1,6 +1,0 @@
-
-These scripts are intended to be used temporarily while the webpage and mobile device applications are being written.  Because this is designed as a quick means for people to 
-
-Bugs:
- - There is no checking on the MySQL return values.
- - It is possible for t

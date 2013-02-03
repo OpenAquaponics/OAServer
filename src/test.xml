@@ -1,6 +1,0 @@
-<?xml version="1.0" ?>
-<OANode>
-  <Statistics mNodeId="1" mSampleTime="100" mTempAirIndoor="23.43" mTempAirOutdoor="27.54" mTempWater="23.4" mHumdityIndoor="50" mHumidtyOutdoor="85" mBatteryVoltage="12.4" mSolarPanelVoltage="13.5" />
-  <NodeConfig mNodeId="2" mDescription="Balcony system" mSamplePeriodSecs="10" mLastUpdate="12314" mNumFish="13" mNumPlants="42" />
-  <Accounting mDate="123012484" mDescription="Bought a system" mAmount="54.67" />
-</OANode>
