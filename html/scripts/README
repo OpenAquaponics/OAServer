@@ -1,0 +1,8 @@
+
+These scripts are intended to be used temporarily while the webpage and mobile device applications are being written.  Because this is designed as a quick means for people to add new entries directly into the database, there is some 'slop' involved with the creation of rows and tables.  The OAServer API will eventually be the only method for creating/updating/deleting entries, but this is a stop gap in the interim.
+
+Bugs:
+ - There is no checking on the MySQL return values.
+ - It is possible for the script to fail and some rows/tables will be created.
+ - This is very minimal sanity checking of the input stream
+ - The user must keep track of the OASystemIds and OANodeIds when using these scripts.

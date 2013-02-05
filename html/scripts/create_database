@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+
+import os;
+import getpass;
+import subprocess;
+import argparse;
+from time import gmtime, strftime;
+
+
+def main(**kwargs):
+
+  # Process the command line arguements
+  if(kwargs['u']): username = kwargs['u'];
+  else: username  = str(raw_input("  Enter MySQL username: "));
+
+  if(kwargs['p']): password = kwargs['p'];
+  else: password  = getpass.getpass("  Enter MySQL password: ");
+  
+
+  # There is probably a more correct way to see if the username/password are valid, but this works
+  with open(os.devnull,"w") as fnull:
+    cmd = "mysql -u %s --password=%s -e 'SHOW DATABASES'" % (username, password);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+    if(ret) :
+      exit(1);
+
+  dbpath    = "../../database"
+  dbbakpath = "../../database/backup"
+
+  print "---------------\nCreating MySQL databases"
+
+  # Backup the current databases and load the blank new ones
+  with open(os.devnull,"w") as fnull:
+    print "  Creating backup directory:\n    %s" % (dbbakpath);
+
+    cmd = "mkdir %s" % (dbbakpath);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull, stderr = fnull);
+    print "  Creating backup databases:";
+
+    backup = strftime("%Y%m%d_%H%M%S", gmtime()) + "_OAData.sql";
+    print "    %s" % (backup);
+    cmd = "mysqldump -u %s --password=%s OAData > %s/%s" % (username, password, dbbakpath, backup);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+
+    backup = strftime("%Y%m%d_%H%M%S", gmtime()) + "_OAServer.sql";
+    print "    %s" % (backup);
+    cmd = "mysqldump -u %s --password=%s OAServer > %s/%s" % (username, password, dbbakpath, backup);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+
+    print "  Creating OpenAquaponics databases:";
+
+    print "    OAServer" % ();
+    cmd = "mysql -u %s --password=%s -e 'DROP DATABASE IF EXISTS OAServer; CREATE DATABASE OAServer'" % (username, password);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+    cmd = "mysql -u %s --password=%s OAServer < %s/OAServer.sql" % (username, password, dbpath);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+
+    print "    OAData" % ();
+    cmd = "mysql -u %s --password=%s -e 'DROP DATABASE IF EXISTS OAData; CREATE DATABASE OAData'" % (username, password);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+
+  print ""
+
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description = "Create a user in the database", version = "%(prog)s 1.0");
+  parser.add_argument('-u', nargs="?", type = str, default = "", help = "MySQL database username");
+  parser.add_argument('-p', nargs="?", type = str, default = "", help = "MySQL database password");
+  args = parser.parse_args();
+  main(**vars(args));
+
+
+

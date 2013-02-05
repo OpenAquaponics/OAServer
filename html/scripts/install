@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os;
+import getpass;
+import subprocess;
+import argparse;
+
+url = "www.opensourceaquaponics.org";
+
+def main(**kwargs):
+
+  print "\n---------------------------------------------";
+  print "  Welcome to OpenAquaponics quick installation";
+  print "---------------------------------------------";
+
+  # Process the command line arguements
+  if(kwargs['u']): username = kwargs['u'];
+  else: username  = str(raw_input("  Enter MySQL username: "));
+
+  if(kwargs['p']): password = kwargs['p'];
+  else: password  = getpass.getpass("  Enter MySQL password: ");
+  
+
+  # There is probably a more correct way to see if the username/password are valid, but this works
+  with open(os.devnull,"w") as fnull:
+    cmd = "mysql -u %s --password=%s -e 'SHOW DATABASES'" % (username, password);
+    ret = subprocess.call(cmd, shell = True, stdout = fnull);
+    if(ret) :
+      exit(1);
+
+
+  os.system("./create_database -u %s -p %s" % (username, password));
+  os.system("./quick_menu -u %s -p %s" % (username, password));
+
+  print "\n---------------------------------------------";
+  print "  Completed installation";
+  print "---------------------------------------------";
+  print "  Please refer to the README and %s for more information\n" % (url);
+
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description = "Create a user in the database", version = "%(prog)s 1.0");
+  parser.add_argument('-u', nargs="?", type = str, default = "", help = "MySQL database username");
+  parser.add_argument('-p', nargs="?", type = str, default = "", help = "MySQL database password");
+  args = parser.parse_args();
+  main(**vars(args));
+
