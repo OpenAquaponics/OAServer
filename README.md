@@ -1,4 +1,4 @@
 OAServer
 ========
 
-Open Aquaponics server application (C++/Linux)
+Open Aquaponics server application (Php/Linux)
