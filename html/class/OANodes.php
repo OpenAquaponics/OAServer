@@ -264,6 +264,8 @@ class OAData extends RestApiInterface {
 /* The SLIM application callback for the /{UID}/OANodes/{NID}/data URL */
 $app->map('/v1/:user/OANodes/:uid/data(/)', function($user, $uid = null){
   $app = Slim::getInstance();
+  $app->contentType("application/json");
+
   $class = 'OAData';
   try {
     // Check that class exists
@@ -279,7 +281,7 @@ $app->map('/v1/:user/OANodes/:uid/data(/)', function($user, $uid = null){
 //    $auth = $app->getEncryptedCookie('auth');
 //    if(in_array($method, array('POST', 'PUT', 'DELETE')) && !$auth) throw new ForbiddenException();
 
-    if($method == 'GET' && $uid != null) $res = $class->all($user, $uid, $opts, '1');
+    if($method == 'GET' && $uid != null) $res = array('OAData' => $class->all($user, $uid, $opts, '1'));
     else if($method == 'POST' && $uid != null) $res = $class->add($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'PUT' && $uid != null) $res = $class->put($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
     else if($method == 'DELETE' && $uid != null) $res = $class->del($user, $uid, $opts, '1', json_decode($app->request()->getBody()));
